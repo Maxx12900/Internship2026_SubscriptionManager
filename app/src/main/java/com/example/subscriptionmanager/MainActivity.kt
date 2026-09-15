@@ -1,5 +1,6 @@
 package com.example.subscriptionmanager
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,6 +22,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
+
+fun getInstalledApps(context: Context): Array<String> {
+    val packageManager = context.packageManager
+    val packages = packageManager.getInstalledPackages(0)
+    return packages.map { it.packageName }.toTypedArray()
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
