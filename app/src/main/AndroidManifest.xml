@@ -11,6 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SubscriptionManager">
+        <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
