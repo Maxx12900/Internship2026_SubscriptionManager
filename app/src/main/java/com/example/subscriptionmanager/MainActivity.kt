@@ -21,6 +21,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import com.example.subscriptionmanager.notifications.createNotification
+import com.example.subscriptionmanager.notifications.createNotificationChannel
+import com.example.subscriptionmanager.notifications.showNotification
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
 
 fun getInstalledApps(context: Context): Array<String> {
@@ -33,11 +36,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        createNotificationChannel(this)
+
+        val testNotification = createNotification(this, "test", "I'm a text!")
+
         setContent {
             SubscriptionManagerTheme {
                 SubscriptionManagerApp()
             }
         }
+
+        showNotification(this, testNotification)
     }
 }
 
