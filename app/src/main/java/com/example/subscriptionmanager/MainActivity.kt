@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListScreen
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
 
 fun getInstalledApps(context: Context): Array<String> {

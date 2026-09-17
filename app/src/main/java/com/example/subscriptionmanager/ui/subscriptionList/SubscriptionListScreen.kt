@@ -1,8 +1,6 @@
-package com.example.subscriptionmanager.ui.subscriptionlist
+package com.example.subscriptionmanager.ui.subscriptionList
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,9 +19,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.subscriptionmanager.ui.components.AppIcon
 
 
 @Composable
@@ -38,8 +36,8 @@ fun SubscriptionListScreen(
             contentPadding = PaddingValues(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(subscriptions) { (name, category, price, isActive) ->
-                SubscriptionCard(name, category, price, isActive)
+            items(subscriptions) { (name, packageName, category, price, isActive) ->
+                SubscriptionCard(name, packageName, category, price, isActive)
             }
         }
     }
@@ -49,6 +47,7 @@ fun SubscriptionListScreen(
 // Function that draws a box for a subscription in the list
 fun SubscriptionCard(
     name : String,
+    packageName : String?,
     category : String,
     price : String,
     isActive : Boolean
@@ -65,12 +64,7 @@ fun SubscriptionCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Placeholder, replace with image
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(Color.Black, RoundedCornerShape(12.dp))
-            ) { }
+            AppIcon(packageName, fallbackLetter = "${name.first()}")
             Spacer(modifier = Modifier.size(12.dp))
             Column(
                 modifier = Modifier.weight(1f)
