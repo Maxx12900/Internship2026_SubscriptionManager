@@ -1,13 +1,27 @@
 package com.example.subscriptionmanager.data.entities
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "Subscription")
-data class Subscription(@PrimaryKey(autoGenerate = true)
+@Entity(
+    tableName = "subscriptions",
+    foreignKeys = [
+        ForeignKey(
+            entity = CategoryEntity::class,
+            parentColumns = ["categoryId"],
+            childColumns = ["categoryId"],
+            onDelete = ForeignKey.SET_NULL
+        )
+    ],
+    indices = [
+        Index(value = ["categoryId"])
+    ]
+)
+data class SubscriptionEntity(@PrimaryKey(autoGenerate = true)
     val subscriptionId:Int = 0,
     val categoryId: Int? = null,
-    val paymentMethodId: Int? = null,
     val name: String,
     val price: Double,
     val currency: String = "USD",
