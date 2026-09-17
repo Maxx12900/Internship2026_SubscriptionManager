@@ -19,7 +19,7 @@ interface SubscriptionDao {
     @Update
     suspend fun updateSubscription(subscription: SubscriptionEntity)
 
-    @Query("SELECT * FROM subscriptions ORDER BY nextRenewalDate")
+    @Query ("SELECT * FROM subscriptions ORDER BY nextRenewalDate")
     fun getAllSubscriptions(): Flow<List<SubscriptionEntity>>
 
     @Query("SELECT * FROM subscriptions WHERE subscriptionId = :id")
