@@ -1,7 +1,7 @@
 package com.example.subscriptionmanager.ui.subscriptionList
 
 import androidx.lifecycle.ViewModel
-import com.example.subscriptionmanager.data.Subscription
+import com.example.subscriptionmanager.data.model.Subscription
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
