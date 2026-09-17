@@ -23,12 +23,6 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListScreen
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
 
-fun getInstalledApps(context: Context): Array<String> {
-    val packageManager = context.packageManager
-    val packages = packageManager.getInstalledPackages(0)
-    return packages.map { it.packageName }.toTypedArray()
-}
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,14 +56,7 @@ fun SubscriptionManagerApp() {
                 )
             }
         }
-    ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Greeting(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding)
-            )
-        }
-    }
+    )
 }
 
 enum class AppDestinations(
@@ -79,20 +66,4 @@ enum class AppDestinations(
     HOME("Home", R.drawable.ic_home),
     FAVORITES("Favorites", R.drawable.ic_favorite),
     PROFILE("Profile", R.drawable.ic_account_box),
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SubscriptionManagerTheme {
-        Greeting("Android")
-    }
 }
