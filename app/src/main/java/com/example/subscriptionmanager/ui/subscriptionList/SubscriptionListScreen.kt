@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subscriptionmanager.ui.components.AppIcon
@@ -36,8 +37,8 @@ fun SubscriptionListScreen(
             contentPadding = PaddingValues(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(subscriptions) { (name, packageName, category, price, isActive) ->
-                SubscriptionCard(name, packageName, category, price, isActive)
+            items(subscriptions) { (name, packageName,_, price, isActive) ->
+                SubscriptionCard(name, packageName, price, isActive)
             }
         }
     }
@@ -48,7 +49,6 @@ fun SubscriptionListScreen(
 fun SubscriptionCard(
     name : String,
     packageName : String?,
-    category : String,
     price : String,
     isActive : Boolean
 ) {
@@ -65,13 +65,14 @@ fun SubscriptionCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AppIcon(packageName, fallbackLetter = "${name.first()}")
+
             Spacer(modifier = Modifier.size(12.dp))
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(text = name)
-                Text(text = category)
-            }
+
+            Text(
+                text = name,
+                modifier = Modifier.weight(1f),
+                fontWeight = FontWeight.Bold
+            )
             Column(
                 horizontalAlignment = Alignment.End
             ) {
