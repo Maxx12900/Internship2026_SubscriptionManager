@@ -14,7 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListScreen
+import com.example.subscriptionmanager.navigation.AppNavGraph
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
 
 class MainActivity : ComponentActivity() {
@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SubscriptionManagerTheme {
-                SubscriptionListScreen()
+                AppNavGraph()
             }
         }
     }

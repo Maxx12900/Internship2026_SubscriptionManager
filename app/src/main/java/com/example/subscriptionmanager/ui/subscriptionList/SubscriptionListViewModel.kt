@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.stateIn
 class SubscriptionListViewModel : ViewModel() {
 
     private val _subscriptions = MutableStateFlow(
-        // placeholder
+        // TODO: change to db entries
         listOf(
             Subscription("Netflix", price = "15.99", packageName = "com.netflix.mediaclient", category = "Entertainment"),
             Subscription("Spotify", price = "9.99",  packageName = "com.spotify.music"),

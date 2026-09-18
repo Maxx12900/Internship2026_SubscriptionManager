@@ -1,34 +1,32 @@
 package com.example.subscriptionmanager.ui.subscriptionList
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -38,12 +36,19 @@ val padding = 12.dp
 @Composable
 // Main function, draws the whole screen with list of subscriptions
 fun SubscriptionListScreen(
-    viewModel: SubscriptionListViewModel = viewModel()
+    viewModel: SubscriptionListViewModel = viewModel(),
+    onAddClick: () -> Unit
 ) {
     val subscriptions by viewModel.subscriptions.collectAsState()
     val selectedCategories by viewModel.selectedCategories.collectAsState()
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = onAddClick) {
+                Icon(Icons.Default.Add, contentDescription = "")
+            }
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -60,7 +65,7 @@ fun SubscriptionListScreen(
                 horizontalArrangement = Arrangement.spacedBy(padding)
             ) {
                 items(
-                    // placeholder
+                    // TODO: change to the actual list of categories
                     listOf("Entertainment", "Music")
                 ) { category ->
                     FilterChip(
@@ -80,6 +85,8 @@ fun SubscriptionListScreen(
                     SubscriptionCard(name, packageName, price, isActive)
                 }
             }
+
+
         }
     }
 }
