@@ -1,9 +1,10 @@
 package com.example.subscriptionmanager.ui.subscriptionList
 
 import androidx.lifecycle.ViewModel
-import com.example.subscriptionmanager.data.model.Subscription
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import com.example.subscriptionmanager.data.model.Subscription
 
 class SubscriptionListViewModel : ViewModel() {
 
@@ -14,5 +15,19 @@ class SubscriptionListViewModel : ViewModel() {
             Subscription("YouTube", price = "7.99",  packageName = "com.google.android.youtube")
         )
     )
-    val subscriptions: StateFlow<List<Subscription>> = _subscriptions
+    val subscriptions: StateFlow<List<Subscription>> = _subscriptions.asStateFlow()
+
+    fun addSubscription(
+        name: String,
+        price: Double,
+        billingPeriod: String,
+        nextRenewalDate: String?
+    ) {
+        val newItem = Subscription(
+            name = name,
+            price = price.toString(),
+            packageName = null
+        )
+        _subscriptions.value = listOf(newItem) + _subscriptions.value
+    }
 }
