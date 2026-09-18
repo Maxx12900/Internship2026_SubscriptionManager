@@ -10,7 +10,7 @@ import androidx.room3.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = CategoryEntity::class,
-            parentColumns = ["categoryId"],
+            parentColumns = ["id"],
             childColumns = ["categoryId"],
             onDelete = ForeignKey.SET_NULL
         )
@@ -20,7 +20,7 @@ import androidx.room3.PrimaryKey
     ]
 )
 data class SubscriptionEntity(@PrimaryKey(autoGenerate = true)
-    val subscriptionId:Int = 0,
+    val id:Int = 0,
     val categoryId: Int? = null,
     val name: String,
     val price: Double,

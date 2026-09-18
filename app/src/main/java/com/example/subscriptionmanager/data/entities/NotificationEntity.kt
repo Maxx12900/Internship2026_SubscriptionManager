@@ -10,7 +10,7 @@ import androidx.room3.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = SubscriptionEntity::class,
-            parentColumns = ["subscriptionId"],
+            parentColumns = ["id"],
             childColumns = ["subscriptionId"],
             onDelete = ForeignKey.CASCADE
         )
@@ -19,7 +19,7 @@ import androidx.room3.PrimaryKey
 )
 data class NotificationEntity(
     @PrimaryKey(autoGenerate = true)
-    val notificationId: Int = 0,
+    val id: Int = 0,
     val subscriptionId: Int = 0,
     val remindAt: Long,
     val isShown:Boolean = false,
