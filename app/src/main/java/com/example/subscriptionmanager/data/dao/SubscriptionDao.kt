@@ -22,7 +22,7 @@ interface SubscriptionDao {
     @Query("SELECT * FROM subscriptions ORDER BY nextRenewalDate")
     fun getAllSubscriptions(): Flow<List<SubscriptionEntity>>
 
-    @Query("SELECT * FROM subscriptions WHERE subscriptionId = :id")
+    @Query("SELECT * FROM subscriptions WHERE id = :id")
     fun getSubscriptionById(id:Int) : SubscriptionEntity?
 
     @Query("SELECT * FROM subscriptions WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")

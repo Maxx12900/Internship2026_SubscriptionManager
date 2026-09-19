@@ -5,35 +5,19 @@ import androidx.room3.ForeignKey
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
 
-@Entity(
-    tableName = "subscriptions",
-    foreignKeys = [
-        ForeignKey(
-            entity = CategoryEntity::class,
-            parentColumns = ["categoryId"],
-            childColumns = ["categoryId"],
-            onDelete = ForeignKey.SET_NULL
-        )
-    ],
-    indices = [
-        Index(value = ["categoryId"])
-    ]
-)
-data class SubscriptionEntity(@PrimaryKey(autoGenerate = true)
-    val subscriptionId:Int = 0,
-    val categoryId: Int? = null,
+@Entity(tableName = "subscriptions")
+data class SubscriptionEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id:Int = 0,
     val name: String,
+    val packageName: String,
     val price: Double,
-    val currency: String = "USD",
-    val billingPeriod: String = "monthly",
-    val status:String = "active",
+    val billingPeriod: BillingPeriod = BillingPeriod.MONTHLY,
+    val nextRenewalDate: String, // We should keep this so that we don't have to calculate it
+    val status: Boolean = true,
     val startDate: String,
-    val nextRenewalDate: String? = null,
-    val trialEndDate: String? = null,
-    val isAutoRenewal: Boolean,
-    val notes: String? = null,
     val score: Int = 0,
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis() // Do we really need this? - Aiden
 )
 
 
