@@ -6,6 +6,7 @@ import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import com.example.subscriptionmanager.data.entities.NotificationEntity
+import com.example.subscriptionmanager.data.entities.SubscriptionEntity
 import kotlinx.coroutines.flow.Flow
 
 
@@ -16,6 +17,11 @@ interface NotificationDao {
     suspend fun insertNotification(notification: NotificationEntity):Long
 
     @Query("SELECT * FROM notifications WHERE subscriptionId = :subscriptionId")
-    fun getNotificationsForSubscription(subscriptionId: Long): Flow<List<NotificationEntity>>
+    fun getNotificationsForSubscription(subscriptionId: Int): Flow<List<NotificationEntity>>
 
+    @Query("SELECT * FROM notifications WHERE reminderDate = :currentDate AND shouldRemind = daysBeforeToRemind")
+    fun getNotificationsForReminders(currentDate: String): Flow<List<NotificationEntity>>
+
+    @Query("SELECT * FROM notifications WHERE trialEndDate IS NOT NULL AND CAST(julianday(trialEndDate) - julianday(:currentDate) AS INTEGER) = daysBeforeToRemind")
+    fun getNotificationsForTrialEnding(currentDate: String): Flow<List<NotificationEntity>>
 }

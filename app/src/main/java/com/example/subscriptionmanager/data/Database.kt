@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room3.Database
 import androidx.room3.Room
 import androidx.room3.RoomDatabase
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.example.subscriptionmanager.data.dao.*
 import com.example.subscriptionmanager.data.entities.*
 
@@ -22,16 +23,14 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun notificationDao(): NotificationDao
     companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
+        @Volatile // visible to all threads
+        private var INSTANCE: AppDatabase? = null // class property, isn't instance specific
 
         fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "subscriptions_db"
-                ).build()
+            return INSTANCE ?: synchronized(this){ // if INSTANCE not null, returns INSTANCE, otherwise it returns a new instance.
+                val instance = Room.databaseBuilder<AppDatabase>(context.applicationContext, "subscriptions_db")
+                    .setDriver(AndroidSQLiteDriver())
+                    .build()
                 INSTANCE = instance
                 instance
             }
