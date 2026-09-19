@@ -10,18 +10,19 @@ import androidx.room3.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = SubscriptionEntity::class,
-            parentColumns = ["subscriptionId"],
+            parentColumns = ["id"],
             childColumns = ["subscriptionId"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.CASCADE // a row is deleted when the row in the subscriptions table with its id is deleted
         )
     ],
-    indices = [Index(value = ["subscriptionId"])]
 )
 data class NotificationEntity(
     @PrimaryKey(autoGenerate = true)
-    val notificationId: Int = 0,
+    val id: Int = 0,
     val subscriptionId: Int = 0,
-    val remindAt: Long,
-    val isShown:Boolean = false,
-    val status: String = "pending"
+    val shouldRemind: Boolean,
+    val reminderDate: String, // date of the next reminder
+    val daysBeforeToRemind: Int, // Works for every type of reminder
+    val showPriceChanges: Boolean, // FIXME: we need to deal with this one :\
+    val trialEndDate: String? = null,
 )
