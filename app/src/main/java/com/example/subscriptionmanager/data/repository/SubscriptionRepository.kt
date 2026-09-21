@@ -40,7 +40,7 @@ class SubscriptionRepository(
         categoryDao.insertCategory(category)
 
     // Notification operations
-    fun getNotificationsForSubscription(subscriptionId: Long): Flow<List<NotificationEntity>> =
+    fun getNotificationsForSubscription(subscriptionId: Int): Flow<List<NotificationEntity>> =
         notificationDao.getNotificationsForSubscription(subscriptionId)
 
     suspend fun insertNotification(notification: NotificationEntity): Long =

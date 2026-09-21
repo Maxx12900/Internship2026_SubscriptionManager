@@ -11,8 +11,9 @@ import android.icu.util.Calendar
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
+import kotlin.collections.set
 
-fun getApplicationsUsageData(activity: Activity, intervalType: Int, intervalMillis: Int): List<UsageStats> {
+fun getApplicationsUsageData(activity: Activity, intervalMillis: Int): Map<String, UsageStats> {
     // intervalMillis - how long is the interval you want to analyze (in milliseconds).
     if (ActivityCompat.checkSelfPermission(
             activity,
@@ -25,15 +26,14 @@ fun getApplicationsUsageData(activity: Activity, intervalType: Int, intervalMill
         }
         activity.startActivity(intent)
 
-        return listOf()  // nothing to return
+        return mapOf()  // nothing to return
     }
 
     val usageStatsManager = activity.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
     val now = System.currentTimeMillis()
 
-    return usageStatsManager.queryUsageStats(
-        intervalType,
+    return usageStatsManager.queryAndAggregateUsageStats(
         now - intervalMillis,
         now
     )

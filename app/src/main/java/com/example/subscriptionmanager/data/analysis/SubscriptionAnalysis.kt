@@ -3,22 +3,32 @@ package com.example.subscriptionmanager.data.analysis
 import android.app.Activity
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
+import com.example.subscriptionmanager.notifications.createNotification
+import com.example.subscriptionmanager.notifications.showNotification
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.function.Predicate
 
 
-fun debugPrintPackageNames(activity: Activity) {
-    val usageStats = getApplicationsUsageData(activity)
+
+fun debugPrintPackageNames(activity: Activity, condition: Predicate<String>) {
+    val usageStats = getApplicationsUsageData(
+        activity,
+        1000 * 60 * 60 * 24  // 1 day
+    )
 
     val packageNames = mutableListOf<String>();
 
-    for (usageStat: UsageStats in usageStats) {
-        packageNames += usageStat.packageName
+    for (packageName: String in usageStats.keys) {
+        if (condition.test(packageName)) {
+            packageNames += packageName
+        }
     }
 
     println(packageNames)
 }
+
 
 
 fun analyzeSubscription(activity: Activity, packageName: String) {
@@ -28,13 +38,10 @@ fun analyzeSubscription(activity: Activity, packageName: String) {
     val interval = 1000 * 60 * 60 * 24
     val usageStats = getApplicationsUsageData(
         activity,
-        UsageStatsManager.INTERVAL_BEST,
         interval
     )
 
-    val appUsageStatList = usageStats.filter { it.packageName == packageName }
-
-    if (appUsageStatList.isEmpty()) {
+    if (usageStats[packageName] == null) {
         // this means one of two things:
         // 1) User denied granting permission
         // 2) The app is not installed on this device
@@ -44,15 +51,8 @@ fun analyzeSubscription(activity: Activity, packageName: String) {
         return
     }
 
-    if (appUsageStatList.size > 1) {
-        // ideally we should not get more than 1 packageName
-        // NOTE: this is assuming that UsageStatsManager.INTERVAL_BEST is selected at all times.
-        // NOTE: Otherwise, feel free to remove this clause and adjust the function
-        error("More than one package name was found for: $packageName")
-    }
-
     // analyze the subscription
-    val appUsageStat = appUsageStatList[0]
+    val appUsageStat = usageStats[packageName]!!
 
     // INFO: analysis is done in the following way: check for how many milliseconds the app has been used on this device
     // INFO: there will be a threshold below which we will notify the user about considering to remove the subscription
@@ -60,24 +60,11 @@ fun analyzeSubscription(activity: Activity, packageName: String) {
     // INFO: though, maybe there should be an option to send reminders about renewals anyway?
 
     val usageTime = appUsageStat.totalTimeVisible  // for how long the app has been actively used
-    val usagePercentage = usageTime / interval
+    val usagePercentage = usageTime.toDouble() / interval.toDouble()
     val usageThreshold = 0.0005  // using the app for more that this amound will consider the app as 'actively used'
+
     if (usagePercentage < usageThreshold) {
-
+        val n = createNotification(activity, "Unused Subscription", "You might want to cancel the $packageName subscription!")
+        showNotification(activity, n)
     }
-
-//    for (usageStat: UsageStats in usageStats) {
-//        if (usageStat.packageName == packageName) {
-//            println("Package name: " + usageStat.packageName)
-//            print("Used for: ")
-//            print(usageStat.totalTimeVisible / 1000)
-//            print(" seconds\n")
-//
-//
-//            print("Last time opened: ")
-//            print(formatter.format(Date(usageStat.lastTimeVisible)))
-//            println()
-//            println("-----")
-//        }
-//    }
 }

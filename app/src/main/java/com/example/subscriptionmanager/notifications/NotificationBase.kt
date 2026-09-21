@@ -13,36 +13,45 @@ import androidx.core.app.NotificationManagerCompat
 import com.example.subscriptionmanager.R
 
 const val CHANNEL_ID: String = "subscriptionManager"
-var notification_id = 0
+private var current_notification_id = 0
 
-fun createNotification(context: Context, title: String, content: String): NotificationCompat.Builder {
+data class Notification(
+    val id: Int,
+    val builder: NotificationCompat.Builder
+)
+
+fun createNotification(context: Context, title: String, content: String): Notification {
+    current_notification_id++  // make sure each notification is unique
+
     val builder = NotificationCompat.Builder(context, CHANNEL_ID)
         .setSmallIcon(R.drawable.ic_home)
         .setContentTitle(title)
         .setContentText(content)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-    return builder
+    val notification = Notification(current_notification_id, builder)
+
+    return notification
 }
 
-fun showNotification(activity: Activity, notificationBuilder: NotificationCompat.Builder) {
-    notification_id++  // make sure each notification is unique
+fun showNotification(activity: Activity, notification: Notification) {
     with (NotificationManagerCompat.from(activity)) {
         if (ActivityCompat.checkSelfPermission(
                 activity,
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED) {
             // Request permission to send notifications here
-
+            // TODO: if the user already denied giving access to notifications, persuade them
             ActivityCompat.requestPermissions(
                 activity,
-                listOf(Manifest.permission.POST_NOTIFICATIONS).toTypedArray(),
-                1)
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                1
+            )
 
             return@with  // return from the current "with" label
         }
 
-        notify(notification_id, notificationBuilder.build())
+        notify(notification.id, notification.builder.build())
     }
 }
 
