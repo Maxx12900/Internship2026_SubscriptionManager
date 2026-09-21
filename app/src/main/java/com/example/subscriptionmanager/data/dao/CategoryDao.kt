@@ -17,11 +17,9 @@ interface CategoryDao {
     @Query("SELECT * FROM categories")
     fun getAllCategories(): Flow<List<CategoryEntity>>
 
-    // I tested it on another db, it should work :shrug:
-    @Query("SELECT subscriptions.* FROM subscriptions INNER JOIN categories ON subscriptions.id = categories.subscriptionId WHERE categories.category = :category")
-    fun getSubscriptionsByCategory(category: Category): Flow<List<SubscriptionEntity>>
+    // Let's hope this works, needs testing...
+    @Query("SELECT subscriptions.* FROM subscriptions INNER JOIN categories ON subscriptions.id = categories.subscriptionId WHERE categories.category & :category > 0 ORDER BY :column :order")
+    fun getSubscriptionsByCategory(category: Long, column: String, order: String): Flow<List<SubscriptionEntity>>
 
-    @Delete
-    suspend fun deleteCategory(category: CategoryEntity)
-
+    // Having a delete function for categories makes no sense, it is deleted automatically
 }

@@ -20,5 +20,5 @@ data class CategoryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val subscriptionId: Int,
-    val category: Category,
+    val category: Long,
 )
