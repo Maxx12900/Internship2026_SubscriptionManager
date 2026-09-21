@@ -17,7 +17,7 @@ fun getApplicationsUsageData(activity: Activity, intervalMillis: Int): Map<Strin
     // intervalMillis - how long is the interval you want to analyze (in milliseconds).
     if (ActivityCompat.checkSelfPermission(
             activity,
-            Manifest.permission.POST_NOTIFICATIONS
+            Manifest.permission.PACKAGE_USAGE_STATS
         ) != PackageManager.PERMISSION_GRANTED
     ) {
         // request permission
