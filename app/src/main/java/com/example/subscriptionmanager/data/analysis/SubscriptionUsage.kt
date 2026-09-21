@@ -27,6 +27,7 @@ fun getApplicationsUsageData(activity: Activity, intervalType: Int, intervalMill
 
         return listOf()  // nothing to return
     }
+
     val usageStatsManager = activity.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
     val now = System.currentTimeMillis()
