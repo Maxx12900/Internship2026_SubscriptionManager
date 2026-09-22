@@ -9,6 +9,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
+
+
+val initialSubscriptions = listOf(
+    Subscription("Netflix", price = "15.99", packageName = "com.netflix.mediaclient", category = "Entertainment"),
+    Subscription("Spotify", price = "9.99",  packageName = "com.spotify.music", category = "Music"),
+    Subscription("YouTube", price = "7.99",  packageName = "com.google.android.youtube", category = "Entertainment")
+)
 class SubscriptionListViewModel : ViewModel() {
 
     private val _subscriptions = MutableStateFlow(

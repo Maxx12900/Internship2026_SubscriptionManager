@@ -37,7 +37,8 @@ import com.example.subscriptionmanager.ui.components.padding
 // Main function, draws the whole screen with list of subscriptions
 fun SubscriptionListScreen(
     viewModel: SubscriptionListViewModel = viewModel(),
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    onSubscriptionClick: (String) -> Unit
 ) {
     val subscriptions by viewModel.subscriptions.collectAsState()
     val selectedCategories by viewModel.selectedCategories.collectAsState()
@@ -82,7 +83,7 @@ fun SubscriptionListScreen(
                 verticalArrangement = Arrangement.spacedBy(padding)
             ) {
                 items(subscriptions) { (name, packageName, _, price, isActive) ->
-                    SubscriptionCard(name, packageName, price, isActive)
+                    SubscriptionCard(name, packageName, price, isActive, onClick = {onSubscriptionClick(name)})
                 }
             }
         }
@@ -95,9 +96,11 @@ fun SubscriptionCard(
     name : String,
     packageName : String?,
     price : String,
-    isActive : Boolean
+    isActive : Boolean,
+    onClick:() -> Unit
 ) {
     Card(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
