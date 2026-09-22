@@ -5,7 +5,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.example.subscriptionmanager.ui.subscriptionAdd.SubscriptionAddScreen
+import com.example.subscriptionmanager.ui.subscriptionDetails.SubscriptionDetailsScreen
 import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListScreen
 
 sealed class Screen(
@@ -14,7 +17,7 @@ sealed class Screen(
     object SubscriptionList     : Screen("subscription_list")
     object SubscriptionAdd      : Screen("add_subscription")
     object SubscriptionDetails  : Screen("subscription_details/{id}") {
-        fun createRoute(id: String) = "subscription_details/id"
+        fun createRoute(id: String) = "subscription_details/$id"
     }
 }
 
@@ -26,7 +29,10 @@ fun AppNavGraph() {
     NavHost(navController, startDestination = Screen.SubscriptionList.route) {
         composable(Screen.SubscriptionList.route) {
             SubscriptionListScreen(
-                onAddClick = { navController.navigate(Screen.SubscriptionAdd.route) }
+                onAddClick = { navController.navigate(Screen.SubscriptionAdd.route) },
+                onSubscriptionClick = { name ->
+                    navController.navigate(Screen.SubscriptionDetails.createRoute(name))
+                }
             )
         }
         composable(Screen.SubscriptionAdd.route) {
@@ -36,6 +42,18 @@ fun AppNavGraph() {
                     navController.popBackStack()
                 },
                 onCancel = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.SubscriptionDetails.route,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            SubscriptionDetailsScreen(
+                subscriptionName = id,
+                onBack = { navController.popBackStack() },
+                onEdit = { /* TODO edit */ },
+                onDelete = { navController.popBackStack() }
             )
         }
     }
