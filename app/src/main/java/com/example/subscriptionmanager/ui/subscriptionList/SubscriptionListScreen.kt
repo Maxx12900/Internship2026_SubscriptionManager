@@ -31,8 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subscriptionmanager.ui.components.AppIcon
+import com.example.subscriptionmanager.ui.components.padding
 
-val padding = 12.dp
 @Composable
 // Main function, draws the whole screen with list of subscriptions
 fun SubscriptionListScreen(
@@ -52,16 +52,17 @@ fun SubscriptionListScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
+                .padding(padding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(padding)
         ) {
             Text(
                 text = "Subscription Manager",
                 style = typography.headlineLarge,
-                modifier = Modifier.padding(horizontal = padding)
+                fontWeight = FontWeight.Bold,
             )
 
             LazyRow(
-                contentPadding = PaddingValues(horizontal = padding, vertical = 0.dp),
                 horizontalArrangement = Arrangement.spacedBy(padding)
             ) {
                 items(
@@ -78,7 +79,6 @@ fun SubscriptionListScreen(
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(padding),
                 verticalArrangement = Arrangement.spacedBy(padding)
             ) {
                 items(subscriptions) { (name, packageName, _, price, isActive) ->

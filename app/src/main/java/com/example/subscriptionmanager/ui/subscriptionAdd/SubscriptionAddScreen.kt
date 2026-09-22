@@ -6,12 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -20,10 +18,11 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,10 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
+import com.example.subscriptionmanager.ui.components.fieldHeight
+import com.example.subscriptionmanager.ui.components.padding
 
 private val categories = listOf("Entertainment", "Productivity", "Utilities", "Other")
 private val billingPeriods = listOf("Monthly", "Weekly", "Quarterly", "Yearly")
@@ -60,187 +57,136 @@ fun SubscriptionAddScreen(
     val formState by viewModel.formState.collectAsState()
     var showDatePicker: Boolean by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(20.dp)
-            .statusBarsPadding()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        // Top Bar
-        Row(
+    Scaffold { innerPadding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(innerPadding)
+                .padding(padding)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(padding)
         ) {
-            Text(
-                text = "Add Subscription",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1F1F1F)
-            )
-            Text(
-                text = "Cancel",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                modifier = Modifier.clickable { onCancel() }
-            )
-        }
-
-        // Quick Add Presets
-        Text(
-            text = "QUICK ADD",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Gray
-        )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            listOf(
-                "Netflix" to "9.99",
-                "Spotify" to "9.99",
-                "ChatGPT" to "20.00",
-                "Other" to ""
-            ).forEach { (presetName, presetPrice) ->
-                Box(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Add Subscription",
+                    style = typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp)
-                        .background(Color(0xFFF2F2F7), RoundedCornerShape(12.dp))
-                        .clickable {
-                            if (presetName != "Other") {
-                                viewModel.updateName(presetName)
-                                viewModel.updateName(presetPrice)
-                                viewModel.updateCategory("Entertainment")
-                                viewModel.updateBillingPeriod("Monthly")
-                            } else {
-                                viewModel.updateName("")
-                                viewModel.updatePrice("")
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = presetName, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                }
+
+                )
+                Text(
+                    text = "Cancel",
+                    style = typography.titleSmall,
+                    modifier = Modifier
+                        .clickable { onCancel() }
+                )
             }
-        }
-
-        // Form Fields
-        FormFieldLabel("Subscription name")
-        CustomTextField(
-            value = formState.name,
-            onValueChange = { viewModel.updateName(it) },
-            placeholder = "Netflix"
-        )
-
-        FormFieldLabel("Category")
-        CustomDropdownField(
-            selected = formState.category,
-            placeholder = "Entertainment",
-            options = categories,
-            onSelect = { viewModel.updateCategory(it)}
-        )
-
-        FormFieldLabel("Price")
-        CustomTextField(
-            value = formState.price,
-            onValueChange = { viewModel.updatePrice(it) },
-            placeholder = "9.99"
-        )
-
-        FormFieldLabel("Billing period")
-        CustomDropdownField(
-            selected = formState.billingPeriod,
-            placeholder = "Monthly",
-            options = billingPeriods,
-            onSelect = { viewModel.updateBillingPeriod(it)}
-        )
-
-        FormFieldLabel("Next renewal date")
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
-                .clickable { showDatePicker = true }
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
             Text(
-                text = formState.nextRenewalDate.ifEmpty { "Select date" },
-                color = if (formState.nextRenewalDate.isEmpty()) Color.LightGray else Color.Black,
-                fontSize = 14.sp
+                text = "Subscription name",
+                style = typography.bodySmall,
+                modifier = Modifier.padding()
             )
-        }
+            CustomTextField(
+                value = formState.name,
+                onValueChange = { viewModel.updateName(it) },
+                placeholder = "Enter text here"
+            )
+            Text(
+                text = "Category",
+                style = typography.bodySmall,
+                modifier = Modifier.padding()
+            )
+            CustomDropdownField(
+                selected = formState.category,
+                placeholder = "Select category",
+                options = categories,
+                onSelect = { viewModel.updateCategory(it)}
+            )
+            Text(
+                text = "Price",
+                style = typography.bodySmall,
+                modifier = Modifier.padding()
+            )
+            CustomTextField(
+                value = formState.price,
+                onValueChange = { viewModel.updatePrice(it) },
+                placeholder = "9.99"
+            )
 
-        FormFieldLabel("Payment method")
+            Text(
+                text = "Billing period",
+                style = typography.bodySmall,
+                modifier = Modifier.padding()
+            )
+            CustomDropdownField(
+                selected = formState.billingPeriod,
+                placeholder = "Select period",
+                options = billingPeriods,
+                onSelect = { viewModel.updateBillingPeriod(it)}
+            )
 
-        formState.error?.let {
-            Text(it, color = Color.Red, fontSize = 12.sp)
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Save Button
-        Button(
-            onClick = { viewModel.save(onSave) }
-        ) {
-            Text("Save Subscription", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-        }
-    }
-
-    // Calendar Picker Dialog
-    if (showDatePicker) {
-        val datePickerState = rememberDatePickerState()
-
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val selectedMillis = datePickerState.selectedDateMillis
-                        if (selectedMillis != null) {
-                            val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-                            formatter.timeZone = TimeZone.getTimeZone("UTC")
-                            viewModel.updateRenewalDate(formatter.format(Date(selectedMillis)))
-                        }
-                        showDatePicker = false
-                    }
-                ) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
-                }
+            Text(
+                text = "Next renewal date",
+                style = typography.bodySmall,
+                modifier = Modifier.padding()
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(fieldHeight)
+                    .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
+                    .clickable { showDatePicker = true }
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Text(
+                    text = formState.nextRenewalDate.ifEmpty { "Select date" },
+                    color = if (formState.nextRenewalDate.isEmpty()) Color.LightGray else Color.Black,
+                    fontSize = 14.sp
+                )
             }
-        ) {
-            DatePicker(state = datePickerState)
+
+            // Save Button
+            Button(
+                onClick = { viewModel.save(onSave) }
+            ) {
+                Text("Save Subscription", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            }
+        }
+
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState()
+
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancel")
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            datePickerState.selectedDateMillis?.let { viewModel.updateRenewalDate(it) }
+                            showDatePicker = false
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
         }
     }
 }
-
 @Composable
-private fun FormFieldLabel(label: String) {
-    Text(
-        text = label,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.Gray,
-        modifier = Modifier.padding(top = 2.dp)
-    )
-}
-
-//TODO: change event handling behavior
-@Composable
-fun CustomTextField(
+private fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String
@@ -249,17 +195,16 @@ fun CustomTextField(
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
-        placeholder = { Text(placeholder, color = Color.LightGray, fontSize = 14.sp) },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF7F7F8),
-            unfocusedContainerColor = Color(0xFFF7F7F8),
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        shape = RoundedCornerShape(12.dp),
+        placeholder = {
+            Text(
+                placeholder,
+                style = typography.bodyMedium
+            )
+        },
+        shape = RoundedCornerShape(padding),
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .height(fieldHeight)
     )
 }
 
@@ -276,10 +221,10 @@ private fun CustomDropdownField(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
-                .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
+                .height(fieldHeight)
+                .background(Color(0xFFF7F7F8), RoundedCornerShape(padding))
                 .clickable { expanded = !expanded }
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = padding),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
