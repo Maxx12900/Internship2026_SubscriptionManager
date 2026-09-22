@@ -14,10 +14,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import com.example.subscriptionmanager.data.analysis.analyzeSubscription
-import com.example.subscriptionmanager.data.analysis.debugPrintPackageNames
 import com.example.subscriptionmanager.navigation.AppNavGraph
+import com.example.subscriptionmanager.notifications.createNotification
 import com.example.subscriptionmanager.notifications.createNotificationChannel
+import com.example.subscriptionmanager.notifications.showNotification
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,8 +25,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         createNotificationChannel(this)
-
-        analyzeSubscription(this, "com.google.android.deskclock")
 
         setContent {
             SubscriptionManagerTheme {
