@@ -1,9 +1,14 @@
 package com.example.subscriptionmanager.ui.subscriptionAdd
 
+import android.icu.text.SimpleDateFormat
+import android.icu.util.TimeZone
 import androidx.lifecycle.ViewModel
 import com.example.subscriptionmanager.data.model.Subscription
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.util.Date
+import java.util.Locale
+
 
 class SubscriptionAddViewModel : ViewModel() {
     // TODO: transform data from form into db record
@@ -27,15 +32,18 @@ class SubscriptionAddViewModel : ViewModel() {
         _formState.value = _formState.value.copy(billingPeriod = value)
     }
 
-    fun updateRenewalDate(value: String) {
-        _formState.value = _formState.value.copy(nextRenewalDate = value)
+    fun updateRenewalDate(millis: Long) {
+        val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+        _formState.value = _formState.value.copy(nextRenewalDate = formatter.format(Date(millis)))
     }
 
-    fun applyPreset(name: String, price: String, category: String, billingPeriod: String) {
-        _formState.value = _formState.value.copy(
-            name = name, price = price, category = category, billingPeriod = billingPeriod
-        )
-    }
+//    fun applyPreset(name: String, price: String, category: String, billingPeriod: String) {
+//        _formState.value = _formState.value.copy(
+//            name = name, price = price, category = category, billingPeriod = billingPeriod
+//        )
+//    }
 
     fun save(onSuccess: (name: String, price: Double, billingPeriod: String, nextRenewalDate: String?) -> Unit) {
         val state = _formState.value
