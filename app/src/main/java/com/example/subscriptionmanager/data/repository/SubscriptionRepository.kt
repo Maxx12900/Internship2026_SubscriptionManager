@@ -9,6 +9,7 @@ import com.example.subscriptionmanager.data.entities.CategoryEntity
 import com.example.subscriptionmanager.data.entities.NotificationEntity
 import com.example.subscriptionmanager.data.entities.SortBy
 import com.example.subscriptionmanager.data.entities.SubscriptionEntity
+import com.example.subscriptionmanager.data.entities.or
 import kotlinx.coroutines.flow.Flow
 
 class SubscriptionRepository(
@@ -49,7 +50,7 @@ class SubscriptionRepository(
     suspend fun insertNotification(notification: NotificationEntity): Long =
         notificationDao.insertNotification(notification)
 
-    suspend fun getSubscriptions(categories: Long = Category.all, criteria: SortBy = SortBy.NAME, isAscending: Boolean = true): Flow<List<SubscriptionEntity>> {
+    suspend fun getSubscriptions(categories: Long = Category.ALL.value, criteria: SortBy = SortBy.NAME, isAscending: Boolean = true): Flow<List<SubscriptionEntity>> {
         val subscriptions = categoryDao.getSubscriptionsByCategory(categories)
         return when (criteria) {
             SortBy.NAME -> sortSubscriptionsByName(subscriptions, isAscending)
