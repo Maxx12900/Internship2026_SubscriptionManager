@@ -37,11 +37,17 @@ fun AppNavGraph() {
         }
         composable(Screen.SubscriptionAdd.route) {
             SubscriptionAddScreen(
-                onSave = {
-                    name, price, billingPeriod, nextRenewalDate ->
-                    navController.popBackStack()
+                onSave = { name, price, billingPeriod, nextRenewalDate ->
+                    if (navController.currentDestination?.route == Screen.SubscriptionAdd.route) {
+                        navController.popBackStack()
+                    }
                 },
-                onCancel = { navController.popBackStack() }
+                onCancel = {
+                    // Only pop backstack if we are currently on the Add screen
+                    if (navController.currentDestination?.route == Screen.SubscriptionAdd.route) {
+                        navController.popBackStack()
+                    }
+                }
             )
         }
         composable(
