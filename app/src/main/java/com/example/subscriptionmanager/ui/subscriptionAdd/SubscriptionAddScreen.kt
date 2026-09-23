@@ -150,10 +150,12 @@ fun SubscriptionAddScreen(
                     fontSize = 14.sp
                 )
             }
-
-            // Save Button
             Button(
-                onClick = { viewModel.save(onSave) }
+                onClick = { viewModel.save(onSave) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Text("Save Subscription", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             }

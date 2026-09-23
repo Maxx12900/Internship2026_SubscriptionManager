@@ -10,14 +10,16 @@ import androidx.navigation.NavType
 import com.example.subscriptionmanager.ui.subscriptionAdd.SubscriptionAddScreen
 import com.example.subscriptionmanager.ui.subscriptionDetails.SubscriptionDetailsScreen
 import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListScreen
+import com.example.subscriptionmanager.ui.editScreen.SubscriptionEditScreen
 
-sealed class Screen(
-    val route: String
-) {
+sealed class Screen(val route: String) {
     object SubscriptionList     : Screen("subscription_list")
     object SubscriptionAdd      : Screen("add_subscription")
     object SubscriptionDetails  : Screen("subscription_details/{id}") {
         fun createRoute(id: String) = "subscription_details/$id"
+    }
+    object SubscriptionEdit     : Screen("subscription_details/{id}/edit") {
+        fun createRoute(id: String) = "subscription_details/$id/edit"
     }
 }
 
@@ -25,7 +27,6 @@ sealed class Screen(
 fun AppNavGraph() {
     val navController : NavHostController = rememberNavController()
 
-    // TODO: change to home screen
     NavHost(navController, startDestination = Screen.SubscriptionList.route) {
         composable(Screen.SubscriptionList.route) {
             SubscriptionListScreen(
@@ -37,8 +38,7 @@ fun AppNavGraph() {
         }
         composable(Screen.SubscriptionAdd.route) {
             SubscriptionAddScreen(
-                onSave = {
-                    name, price, billingPeriod, nextRenewalDate ->
+                onSave = { name, price, billingPeriod, nextRenewalDate ->
                     navController.popBackStack()
                 },
                 onCancel = { navController.popBackStack() }
@@ -52,8 +52,19 @@ fun AppNavGraph() {
             SubscriptionDetailsScreen(
                 subscriptionName = id,
                 onBack = { navController.popBackStack() },
-                onEdit = { /* TODO edit */ },
+                onEdit = { navController.navigate(Screen.SubscriptionEdit.createRoute(id)) },
                 onDelete = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.SubscriptionEdit.route,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: ""
+            SubscriptionEditScreen(
+                subscriptionName = id,
+                onBack = { navController.popBackStack() },
+                onSave = { navController.popBackStack() }
             )
         }
     }
