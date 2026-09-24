@@ -18,7 +18,7 @@ interface CategoryDao {
     fun getAllCategories(): Flow<List<CategoryEntity>>
 
     // Let's hope this works, needs testing...
-    @Query("SELECT subscriptions.* FROM subscriptions INNER JOIN categories ON subscriptions.id = categories.subscriptionId WHERE (categories.category & :categories) > 0")
+    @Query("SELECT subscriptions.* FROM subscriptions INNER JOIN categories ON subscriptions.id = categories.subscriptionId WHERE (categories.category & :categories) = :categories")
     fun getSubscriptionsByCategory(categories: Long): Flow<List<SubscriptionEntity>>
 }
 
