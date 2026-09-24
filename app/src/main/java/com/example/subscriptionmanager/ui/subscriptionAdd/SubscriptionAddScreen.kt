@@ -37,8 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.subscriptionmanager.ui.components.fieldHeight
-import com.example.subscriptionmanager.ui.components.padding
+import com.example.subscriptionmanager.ui.common.fieldHeight
+import com.example.subscriptionmanager.ui.common.padding
 
 private val categories = listOf("Entertainment", "Productivity", "Utilities", "Other")
 private val billingPeriods = listOf("Monthly", "Weekly", "Quarterly", "Yearly")

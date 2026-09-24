@@ -2,47 +2,50 @@ package com.example.subscriptionmanager.ui.subscriptionList
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.subscriptionmanager.data.entities.Category
+import com.example.subscriptionmanager.data.entities.SortBy
 import com.example.subscriptionmanager.data.model.Subscription
+import com.example.subscriptionmanager.data.repository.SubscriptionRepository
+import com.example.subscriptionmanager.data.toSubscription
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 
+class SubscriptionListViewModel(
+    private val subscriptionRepository: SubscriptionRepository
+) : ViewModel() {
 
+    private val _selectedCategories = MutableStateFlow<Set<Category>>(emptySet())
+    val selectedCategories: StateFlow<Set<Category>> = _selectedCategories
+    private val _sortingOption = MutableStateFlow<SortBy>(SortBy.NAME)
+    val sortingOption: StateFlow<SortBy> = _sortingOption
+    private val _isAscending = MutableStateFlow<Boolean>(true)
+    val isAscending: StateFlow<Boolean> = _isAscending
 
-val initialSubscriptions = listOf(
-    Subscription("Netflix", price = "15.99", packageName = "com.netflix.mediaclient", category = "Entertainment"),
-    Subscription("Spotify", price = "9.99",  packageName = "com.spotify.music", category = "Music"),
-    Subscription("YouTube", price = "7.99",  packageName = "com.google.android.youtube", category = "Entertainment")
-)
-class SubscriptionListViewModel : ViewModel() {
-
-    private val _subscriptions = MutableStateFlow(
-        // TODO: change to db entries
-        listOf(
-            Subscription("Netflix", price = "15.99", packageName = "com.netflix.mediaclient", category = "Entertainment"),
-            Subscription("Spotify", price = "9.99",  packageName = "com.spotify.music"),
-            Subscription("YouTube", price = "7.99",  packageName = "com.google.android.youtube")
-        )
-    )
-
-    private val _selectedCategories = MutableStateFlow<Set<String>>(emptySet())
-
-    fun toggleCategory(category: String) {
-        _selectedCategories.value = if (category in _selectedCategories.value) {
-            _selectedCategories.value - category
-        } else {
-            _selectedCategories.value + category
+    fun toggleCategory(category: Category) {
+        _selectedCategories.update { current ->
+            if (category in current) current - category else current + category
         }
     }
 
     // TODO: move filtering to the db, viewmodel just imports the data
+    @OptIn(ExperimentalCoroutinesApi::class)
     val subscriptions: StateFlow<List<Subscription>> =
-        combine(_subscriptions, _selectedCategories) { subs, categories ->
-            if (categories.isEmpty()) subs
-            else subs.filter { it.category in categories }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+         combine(_selectedCategories, _sortingOption) { categories, sort -> categories to sort }
+             .flatMapLatest { (categories, sort) ->
+                 subscriptionRepository.getSubscriptions(categories, sort)
+                     .map {entities -> entities.map {it.toSubscription() }}
+             }
+             .stateIn(
+                 scope = viewModelScope,
+                 started = SharingStarted.WhileSubscribed(5000),
+                 initialValue = emptyList()
+             )
 
-    val selectedCategories: StateFlow<Set<String>> = _selectedCategories
 }

@@ -10,6 +10,7 @@ import com.example.subscriptionmanager.data.entities.NotificationEntity
 import com.example.subscriptionmanager.data.entities.SortBy
 import com.example.subscriptionmanager.data.entities.SubscriptionEntity
 import com.example.subscriptionmanager.data.entities.or
+import com.example.subscriptionmanager.data.entities.toBitmask
 import kotlinx.coroutines.flow.Flow
 
 class SubscriptionRepository(
@@ -18,7 +19,7 @@ class SubscriptionRepository(
     private val notificationDao: NotificationDao
 ) {
     //Subscription operations
-    val allSubscriptions: Flow<List<SubscriptionEntity>> =
+    fun allSubscriptions(): Flow<List<SubscriptionEntity>> =
         subscriptionDao.getAllSubscriptions()
 
     fun getSubscriptionById(id: Int): SubscriptionEntity? =
@@ -37,7 +38,7 @@ class SubscriptionRepository(
         subscriptionDao.deleteSubscription(subscription)
 
     // Category operations
-    val allCategories: Flow<List<CategoryEntity>> =
+    fun allCategories(): Flow<List<CategoryEntity>> =
         categoryDao.getAllCategories()
 
     suspend fun insertCategory(category: CategoryEntity)=
@@ -50,8 +51,8 @@ class SubscriptionRepository(
     suspend fun insertNotification(notification: NotificationEntity): Long =
         notificationDao.insertNotification(notification)
 
-    suspend fun getSubscriptions(categories: Long = Category.ALL.value, criteria: SortBy = SortBy.NAME, isAscending: Boolean = true): Flow<List<SubscriptionEntity>> {
-        val subscriptions = categoryDao.getSubscriptionsByCategory(categories)
+    suspend fun getSubscriptions(categories: Set<Category> = emptySet(), criteria: SortBy = SortBy.NAME, isAscending: Boolean = true): Flow<List<SubscriptionEntity>> {
+        val subscriptions = categoryDao.getSubscriptionsByCategory(categories.toBitmask())
         return when (criteria) {
             SortBy.NAME -> sortSubscriptionsByName(subscriptions, isAscending)
             SortBy.PRICE -> sortSubscriptionsByName(subscriptions, isAscending)
