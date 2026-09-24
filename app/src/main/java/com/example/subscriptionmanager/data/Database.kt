@@ -5,8 +5,12 @@ import androidx.room3.Database
 import androidx.room3.Room
 import androidx.room3.RoomDatabase
 import androidx.sqlite.driver.AndroidSQLiteDriver
-import com.example.subscriptionmanager.data.dao.*
-import com.example.subscriptionmanager.data.entities.*
+import com.example.subscriptionmanager.data.dao.CategoryDao
+import com.example.subscriptionmanager.data.dao.NotificationDao
+import com.example.subscriptionmanager.data.dao.SubscriptionDao
+import com.example.subscriptionmanager.data.entities.CategoryEntity
+import com.example.subscriptionmanager.data.entities.NotificationEntity
+import com.example.subscriptionmanager.data.entities.SubscriptionEntity
 
 @Database(
     entities = [

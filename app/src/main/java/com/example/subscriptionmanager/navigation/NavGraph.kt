@@ -8,7 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.example.subscriptionmanager.ui.subscriptionAdd.SubscriptionAddScreen
-import com.example.subscriptionmanager.ui.subscriptionDetails.SubscriptionDetailsScreen
+//import com.example.subscriptionmanager.ui.subscriptionDetails.SubscriptionDetailsScreen
 import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListScreen
 
 sealed class Screen(
@@ -44,17 +44,17 @@ fun AppNavGraph() {
                 onCancel = { navController.popBackStack() }
             )
         }
-        composable(
-            route = Screen.SubscriptionDetails.route,
-            arguments = listOf(navArgument("id") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id") ?: ""
-            SubscriptionDetailsScreen(
-                subscriptionName = id,
-                onBack = { navController.popBackStack() },
-                onEdit = { /* TODO edit */ },
-                onDelete = { navController.popBackStack() }
-            )
-        }
+//        composable(
+//            route = Screen.SubscriptionDetails.route,
+//            arguments = listOf(navArgument("id") { type = NavType.StringType })
+//        ) { backStackEntry ->
+//            val id = backStackEntry.arguments?.getString("id") ?: ""
+//            SubscriptionDetailsScreen(
+//                subscriptionName = id,
+//                onBack = { navController.popBackStack() },
+//                onEdit = { /* TODO edit */ },
+//                onDelete = { navController.popBackStack() }
+//            )
+//        }
     }
 }

@@ -15,7 +15,6 @@ class SubscriptionAddViewModel : ViewModel() {
     private val _formState = MutableStateFlow(SubscriptionFormState())
     val formState: StateFlow<SubscriptionFormState> = _formState
 
-
     fun updateName(value: String) {
         _formState.value = _formState.value.copy(name = value, error = null)
     }

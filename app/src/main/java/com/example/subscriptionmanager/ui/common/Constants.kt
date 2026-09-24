@@ -1,4 +1,4 @@
-package com.example.subscriptionmanager.ui.components
+package com.example.subscriptionmanager.ui.common
 
 import androidx.compose.ui.unit.dp
 

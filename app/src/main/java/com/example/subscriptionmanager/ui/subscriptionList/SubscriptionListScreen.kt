@@ -2,7 +2,6 @@ package com.example.subscriptionmanager.ui.subscriptionList
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
@@ -27,21 +26,30 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.subscriptionmanager.ui.components.AppIcon
-import com.example.subscriptionmanager.ui.components.padding
+import com.example.subscriptionmanager.data.entities.Category
+import com.example.subscriptionmanager.SubscriptionManagerApplication
+import com.example.subscriptionmanager.ui.common.AppIcon
+import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
+import com.example.subscriptionmanager.ui.common.padding
 
 @Composable
 // Main function, draws the whole screen with list of subscriptions
 fun SubscriptionListScreen(
-    viewModel: SubscriptionListViewModel = viewModel(),
     onAddClick: () -> Unit,
     onSubscriptionClick: (String) -> Unit
 ) {
+    val context = LocalContext.current
+    val repository = (context.applicationContext as SubscriptionManagerApplication).repository
+    val viewModel: SubscriptionListViewModel = viewModel(
+        factory = GenericViewModelFactory { SubscriptionListViewModel(repository) }
+    )
     val subscriptions by viewModel.subscriptions.collectAsState()
     val selectedCategories by viewModel.selectedCategories.collectAsState()
+
 
     Scaffold(
         floatingActionButton = {
@@ -67,13 +75,12 @@ fun SubscriptionListScreen(
                 horizontalArrangement = Arrangement.spacedBy(padding)
             ) {
                 items(
-                    // TODO: change to the actual list of categories
-                    listOf("Entertainment", "Music")
+                    Category.entries
                 ) { category ->
                     FilterChip(
                         selected = category in selectedCategories,
                         onClick = { viewModel.toggleCategory(category) },
-                        label = { Text(category) }
+                        label = { Text(category.name.lowercase().replaceFirstChar { it.uppercase() }) }
                     )
                 }
             }
@@ -82,7 +89,7 @@ fun SubscriptionListScreen(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(padding)
             ) {
-                items(subscriptions) { (name, packageName, _, price, isActive) ->
+                items(subscriptions) { (name, packageName, price, isActive) ->
                     SubscriptionCard(name, packageName, price, isActive, onClick = {onSubscriptionClick(name)})
                 }
             }
@@ -95,7 +102,7 @@ fun SubscriptionListScreen(
 fun SubscriptionCard(
     name : String,
     packageName : String?,
-    price : String,
+    price : Double,
     isActive : Boolean,
     onClick:() -> Unit
 ) {
