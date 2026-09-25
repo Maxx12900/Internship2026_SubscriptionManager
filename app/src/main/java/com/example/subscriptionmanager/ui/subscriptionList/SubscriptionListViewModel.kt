@@ -34,7 +34,6 @@ class SubscriptionListViewModel(
         }
     }
 
-    // TODO: move filtering to the db, viewmodel just imports the data
     @OptIn(ExperimentalCoroutinesApi::class)
     val subscriptions: StateFlow<List<Subscription>> =
          combine(_selectedCategories, _sortingOption) { categories, sort -> categories to sort }
