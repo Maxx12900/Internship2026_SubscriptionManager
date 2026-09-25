@@ -1,6 +1,7 @@
 package com.example.subscriptionmanager.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -41,7 +42,7 @@ fun AppNavGraph() {
         }
         composable(Screen.SubscriptionAdd.route) {
             SubscriptionAddScreen(
-                onSave = { name, price, billingPeriod, nextRenewalDate ->
+                onSave = {
                     if (navController.currentDestination?.route == Screen.SubscriptionAdd.route) {
                         navController.popBackStack()
                     }

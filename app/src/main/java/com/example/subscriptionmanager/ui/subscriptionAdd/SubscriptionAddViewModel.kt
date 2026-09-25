@@ -1,72 +1,105 @@
 package com.example.subscriptionmanager.ui.subscriptionAdd
 
-import android.icu.text.SimpleDateFormat
-import android.icu.util.TimeZone
 import androidx.lifecycle.ViewModel
-import com.example.subscriptionmanager.data.model.Subscription
+import androidx.lifecycle.viewModelScope
+import com.example.subscriptionmanager.data.entities.BillingPeriod
+import com.example.subscriptionmanager.data.entities.Category
+import com.example.subscriptionmanager.data.entities.CategoryEntity
+import com.example.subscriptionmanager.data.entities.SubscriptionEntity
+import com.example.subscriptionmanager.data.repository.SubscriptionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.util.Date
-import java.util.Locale
+import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.TimeZone
 
 
-class SubscriptionAddViewModel : ViewModel() {
+class SubscriptionAddViewModel(
+    private val subscriptionRepository: SubscriptionRepository
+): ViewModel() {
     // TODO: transform data from form into db record
-    private val _formState = MutableStateFlow(SubscriptionFormState())
-    val formState: StateFlow<SubscriptionFormState> = _formState
+    private val _name = MutableStateFlow("Enter subscription name")
+    val name: StateFlow<String> = _name
+
+    private val _category = MutableStateFlow(Category.NONE)
+    val category: StateFlow<Category> = _category
+
+    private val _packageName = MutableStateFlow<String?>("")
+    val packageName = _packageName
+    private val _price = MutableStateFlow("")
+    val price: StateFlow<String> = _price
+
+    private val _billingPeriod = MutableStateFlow(BillingPeriod.MONTHLY)
+    val billingPeriod: StateFlow<BillingPeriod> = _billingPeriod
+
+    private val _nextRenewalDate = MutableStateFlow<Calendar?>(null)
+    val nextRenewalDate: StateFlow<Calendar?> = _nextRenewalDate
+
+    private val _error = MutableStateFlow("")
+    val error: StateFlow<String> = _error
 
     fun updateName(value: String) {
-        _formState.value = _formState.value.copy(name = value, error = null)
+        _name.value = value
     }
 
-    fun updateCategory(value: String) {
-        _formState.value = _formState.value.copy(category = value)
+    fun updateCategory(value: Category) {
+        _category.value = value
+    }
+
+    fun updatePackageName(value: String?) {
+        _packageName.value = value
     }
 
     fun updatePrice(value: String) {
-        _formState.value = _formState.value.copy(price = value, error = null)
+        _price.value = value
     }
 
-    fun updateBillingPeriod(value: String) {
-        _formState.value = _formState.value.copy(billingPeriod = value)
+    fun updateBillingPeriod(value: BillingPeriod) {
+        _billingPeriod.value = value
     }
 
     fun updateRenewalDate(millis: Long) {
-        val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).apply {
-            timeZone = TimeZone.getTimeZone("UTC")
-        }
-        _formState.value = _formState.value.copy(nextRenewalDate = formatter.format(Date(millis)))
+        val calendar = Calendar.getInstance().apply { timeInMillis = millis }
+        _nextRenewalDate.value = calendar
     }
 
-//    fun applyPreset(name: String, price: String, category: String, billingPeriod: String) {
-//        _formState.value = _formState.value.copy(
-//            name = name, price = price, category = category, billingPeriod = billingPeriod
-//        )
-//    }
-
-    fun save(onSuccess: (name: String, price: Double, billingPeriod: String, nextRenewalDate: String?) -> Unit) {
-        val state = _formState.value
-        val trimmedName = state.name.trim()
-        val parsedPrice = state.price.trim().toDoubleOrNull()
+    fun save(
+        onSuccess: () -> Unit
+    ) {
+        val trimmedName = _name.value.trim()
+        val parsedPrice = _price.value.trim().toDoubleOrNull()
+        val renewalDate = _nextRenewalDate.value
 
         when {
-            trimmedName.isEmpty() -> _formState.value = state.copy(error = "Enter a subscription name")
-            parsedPrice == null -> _formState.value = state.copy(error = "Enter a valid price")
-            else -> onSuccess(
-                trimmedName,
-                parsedPrice,
-                state.billingPeriod.ifBlank { "Monthly" },
-                state.nextRenewalDate.trim().ifBlank { null }
-            )
+            trimmedName.isEmpty() -> _error.value = "Enter a subscription name"
+            parsedPrice == null -> _error.value = "Enter a valid price"
+            renewalDate == null -> _error.value = "Pick a renewal date"
+            else -> {
+                _error.value = ""
+                viewModelScope.launch {
+                    val subscriptionId = subscriptionRepository.insertSubscription(
+                        SubscriptionEntity(
+                            id = 0,
+                            name = trimmedName,
+                            packageName = _packageName.value,
+                            price = parsedPrice,
+                            billingPeriod = _billingPeriod.value.ordinal,
+                            nextRenewalDate = renewalDate,
+                            status = true,
+                            startDate = Calendar.getInstance(TimeZone.getTimeZone("UTC")),
+                            score = 0
+                        )
+                    ).toInt()
+
+                    subscriptionRepository.insertCategory(
+                        CategoryEntity(
+                            subscriptionId = subscriptionId,
+                            category = _category.value.value
+                        )
+                    )
+                    onSuccess()
+                }
+            }
         }
     }
 }
-
-data class SubscriptionFormState(
-    val name: String = "",
-    val category: String = "",
-    val price: String = "",
-    val billingPeriod: String = "",
-    val nextRenewalDate: String = "",
-    val error: String? = null
-)
