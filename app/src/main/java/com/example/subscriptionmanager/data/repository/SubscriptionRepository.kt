@@ -25,6 +25,9 @@ class SubscriptionRepository(
     fun getSubscriptionById(id: Int): SubscriptionEntity? =
         subscriptionDao.getSubscriptionById(id)
 
+    fun getSubscriptionByPackageName(packageName: String): SubscriptionEntity? =
+        subscriptionDao.getSubscriptionByPackageName(packageName)
+
     fun searchSubscriptions(query: String): Flow<List<SubscriptionEntity>> =
         subscriptionDao.searchSubscriptions(query)
 

@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         createNotificationChannel(this)
 
-        analyzeSubscription(this, "com.google.android.deskclock")
+        println(analyzeSubscription(this, "com.spotify.music"))
 
         setContent {
             SubscriptionManagerTheme {
