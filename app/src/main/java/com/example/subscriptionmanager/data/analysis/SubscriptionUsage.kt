@@ -31,11 +31,11 @@ fun requestPermissionForUsageDataAccess(activity: Activity): Int {
 }
 
 
-fun getApplicationsUsageData(activity: Activity, intervalMillis: Int): Map<String, UsageStats> {
+fun getApplicationsUsageData(activity: Activity, intervalMillis: Long): Map<String, UsageStats> {
     // intervalMillis - how long is the interval you want to analyze (in milliseconds).
 
     if (requestPermissionForUsageDataAccess(activity) != AppOpsManager.MODE_ALLOWED) {
-        return mapOf()  // womp womp
+        return mapOf()  // womp womp, no analysis for you today
     }
 
     val usageStatsManager = activity.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager

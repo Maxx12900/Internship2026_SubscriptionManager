@@ -25,6 +25,9 @@ interface SubscriptionDao {
     @Query("SELECT * FROM subscriptions WHERE id = :id")
     fun getSubscriptionById(id:Int) : SubscriptionEntity?
 
+    @Query("SELECT * FROM subscriptions WHERE packageName = :packageName")
+    fun getSubscriptionByPackageName(packageName: String) : SubscriptionEntity?
+
     @Query("SELECT * FROM subscriptions WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     fun searchSubscriptions(query:String): Flow<List<SubscriptionEntity>>
 
