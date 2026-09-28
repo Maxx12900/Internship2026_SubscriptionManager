@@ -2,6 +2,7 @@ package com.example.subscriptionmanager.ui.subscriptionList
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,8 +54,12 @@ fun SubscriptionListScreen(
 
 
     Scaffold(
+        containerColor = Color.Transparent,
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddClick) {
+            FloatingActionButton(
+                onClick = onAddClick,
+                modifier = Modifier.padding(bottom = 70.dp)
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "")
             }
         }
@@ -87,7 +93,8 @@ fun SubscriptionListScreen(
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(padding)
+                verticalArrangement = Arrangement.spacedBy(padding),
+                contentPadding = PaddingValues(bottom = 100.dp)
             ) {
                 items(subscriptions) { (name, packageName, price, isActive) ->
                     SubscriptionCard(name, packageName, price, isActive, onClick = {onSubscriptionClick(name)})
