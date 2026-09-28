@@ -2,6 +2,7 @@ package com.example.subscriptionmanager.data.entities
 
 import androidx.room3.Entity
 import androidx.room3.ForeignKey
+import androidx.room3.Index
 import androidx.room3.PrimaryKey
 
 @Entity(
@@ -14,6 +15,7 @@ import androidx.room3.PrimaryKey
             onDelete = ForeignKey.CASCADE // Makes it so that a row is deleted when its associated row in the subscriptions table is deleted
         )
     ],
+    indices = [Index(value = ["subscriptionId"], unique = true)]
 )
 data class CategoryEntity(
     @PrimaryKey(autoGenerate = true)
