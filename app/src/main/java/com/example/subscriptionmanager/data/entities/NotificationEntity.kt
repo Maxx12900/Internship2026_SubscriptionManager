@@ -3,6 +3,7 @@ package com.example.subscriptionmanager.data.entities
 import androidx.room3.ColumnTypeConverters
 import androidx.room3.Entity
 import androidx.room3.ForeignKey
+import androidx.room3.Index
 import androidx.room3.PrimaryKey
 import java.util.Calendar
 
@@ -16,6 +17,7 @@ import java.util.Calendar
             onDelete = ForeignKey.CASCADE // a row is deleted when the row in the subscriptions table with its id is deleted
         )
     ],
+    indices = [Index(value = ["subscriptionId"], unique = true)]
 )
 @ColumnTypeConverters(DateConverters::class)
 data class NotificationEntity(
