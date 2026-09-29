@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -37,7 +38,6 @@ sealed class Screen(val route: String) {
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AppNavGraph() {
     val navController: NavHostController = rememberNavController()
@@ -53,16 +53,19 @@ fun AppNavGraph() {
     )
 
     Scaffold(
-        containerColor = Color(0xFFF2F2F7),
         bottomBar = {
             if (currentRoute in topLevelRoutes) {
                 AppBottomNavigationBar(navController = navController)
             }
         }
-    ) { _ ->
+    ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.SubscriptionList.route
+            startDestination = Screen.SubscriptionList.route,
+            modifier = Modifier.padding(
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding()
+            )
         ) {
             // Home Screen
             composable(Screen.Home.route) {}
