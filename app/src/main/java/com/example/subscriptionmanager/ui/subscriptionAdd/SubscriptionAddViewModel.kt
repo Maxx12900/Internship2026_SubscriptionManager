@@ -17,7 +17,6 @@ import java.util.TimeZone
 class SubscriptionAddViewModel(
     private val subscriptionRepository: SubscriptionRepository
 ): ViewModel() {
-    // TODO: transform data from form into db record
     private val _name = MutableStateFlow("Enter subscription name")
     val name: StateFlow<String> = _name
 
