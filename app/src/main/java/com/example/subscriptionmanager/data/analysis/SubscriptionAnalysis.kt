@@ -2,7 +2,11 @@ package com.example.subscriptionmanager.data.analysis
 
 import androidx.lifecycle.lifecycleScope
 import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.ComponentActivity
+import androidx.annotation.RequiresApi
 import com.example.subscriptionmanager.SubscriptionManagerApplication
 import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.data.entities.SubscriptionEntity
@@ -20,25 +24,44 @@ enum class AnalysisResponseType {
     NO_PACKAGE
 }
 
-fun debugPrintPackageNames(activity: Activity, condition: Predicate<String>) {
-    val usageStats = getApplicationsUsageData(
-        activity,
-        1000 * 60 * 60 * 24  // 1 day
-    )
+fun getPackageNameList(context: Context): List<String> {
+    // returns a list of all installed packages
+    val packageList = context.packageManager.getInstalledPackages(0)
+    val packageNames = mutableListOf<String>()
 
-    val packageNames = mutableListOf<String>();
-
-    for (packageName: String in usageStats.keys) {
-        if (condition.test(packageName)) {
-            packageNames += packageName
+    for (packageInfo in packageList) {
+        packageInfo.packageName.let {
+            packageNames.add(it)
         }
     }
 
-    println(packageNames)
+    return packageNames
+}
+
+fun getAppNameFromPackage(context: Context, packageName: String): String {
+    val pm = context.packageManager
+    val appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+    return pm.getApplicationLabel(appInfo).toString()
+}
+
+fun getPackageNameDisplayNameMap(context: Context): Map<String, String> {
+    var appMap = mutableMapOf<String, String>()
+    getPackageNameList(context).forEach { packageName ->
+        appMap[packageName] = getAppNameFromPackage(context, packageName)
+    }
+
+    return appMap
+}
+
+fun isAppVisibleInMenu(context: Context, packageName: String): Boolean {
+    val packageManager = context.packageManager
+    val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+    return launchIntent != null
 }
 
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
 fun analyzeSubscription(activity: ComponentActivity, packageName: String): AnalysisResponseType {
     val repository: SubscriptionRepository = (activity.applicationContext as SubscriptionManagerApplication).repository
     var activelyUsed: AnalysisResponseType = AnalysisResponseType.NO_PACKAGE

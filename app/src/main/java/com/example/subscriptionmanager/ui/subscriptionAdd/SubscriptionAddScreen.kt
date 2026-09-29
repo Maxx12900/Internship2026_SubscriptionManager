@@ -1,7 +1,10 @@
 package com.example.subscriptionmanager.ui.subscriptionAdd
 
+import android.app.Activity
+import android.app.AppOpsManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +22,10 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,13 +39,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subscriptionmanager.SubscriptionManagerApplication
+import com.example.subscriptionmanager.data.analysis.getAppNameFromPackage
+import com.example.subscriptionmanager.data.analysis.getPackageNameDisplayNameMap
+import com.example.subscriptionmanager.data.analysis.getPackageNameList
+import com.example.subscriptionmanager.data.analysis.isAppVisibleInMenu
+import com.example.subscriptionmanager.data.analysis.requestPermissionForUsageDataAccess
 import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.data.entities.Category
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
@@ -48,6 +63,7 @@ import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListViewModel
 import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionAddScreen(
     onSave: () -> Unit,
@@ -58,12 +74,35 @@ fun SubscriptionAddScreen(
     val viewModel: SubscriptionAddViewModel = viewModel(
         factory = GenericViewModelFactory { SubscriptionAddViewModel(repository) }
     )
+    val appChoiceEnabled = requestPermissionForUsageDataAccess(context as Activity) == AppOpsManager.MODE_ALLOWED
+    val appChoiceMap = getPackageNameDisplayNameMap(context)
+
     val name by viewModel.name.collectAsState()
     val category by viewModel.category.collectAsState()
     val price by viewModel.price.collectAsState()
     val billingPeriod by viewModel.billingPeriod.collectAsState()
     val nextRenewalDate by viewModel.nextRenewalDate.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    var appChoiceText by remember { mutableStateOf("") }
+    var appChoiceExpanded by remember { mutableStateOf(false) }
+
+    val appChoiceFilteredList: () -> Map<String, String> = {
+        var count = 0
+        appChoiceMap.filter {
+            if (count > 5) {
+                return@filter false
+            }
+
+            val include = it.value.contains(appChoiceText, ignoreCase = true) &&
+                    isAppVisibleInMenu(context, it.key) &&
+                    appChoiceText.length >= 2
+
+            if (include) count += 1
+
+            return@filter include
+        }
+    }
 
     var showDatePicker: Boolean by remember { mutableStateOf(false) }
 
@@ -158,6 +197,58 @@ fun SubscriptionAddScreen(
                     color = if (nextRenewalDate == null) Color.LightGray else Color.Black,
                     fontSize = 14.sp
                 )
+            }
+            Text(
+                text = "Linked application",
+                style = typography.bodySmall,
+                modifier = Modifier.padding()
+            )
+            ExposedDropdownMenuBox(
+                expanded = appChoiceExpanded && appChoiceEnabled,
+                onExpandedChange = {
+                    appChoiceExpanded = it && appChoiceEnabled
+                }
+            ) {
+                TextField(
+                    value = appChoiceText,
+                    onValueChange = {
+                        viewModel.updatePackageName(null)
+                        appChoiceText = it
+                        appChoiceExpanded = true && appChoiceEnabled
+                    },
+                    label = {
+                        Text("Application name")
+                    },
+                    placeholder = {
+                        Text("Enter name of the application")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryEditable),
+                    singleLine = true,
+                    enabled = appChoiceEnabled,
+                    readOnly = true
+                )
+                ExposedDropdownMenu(
+                    expanded = appChoiceExpanded,
+                    onDismissRequest = {
+                        appChoiceExpanded = false
+                    }
+                ) {
+                    appChoiceFilteredList().forEach { item ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(item.value)
+                            },
+                            onClick = {
+                                appChoiceText = item.value
+                                viewModel.updatePackageName(item.key)
+                                appChoiceExpanded = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             }
             Text(
                 text = error,
