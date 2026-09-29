@@ -40,10 +40,10 @@ fun AppIcon(
         // Create a deterministic color based on the fallbackLetter
         val backgroundColor = remember(fallbackLetter) {
             val hue = (fallbackLetter.hashCode().absoluteValue % 10 * 30).toFloat()
-            Color.hsv(
+            Color.hsl(
                 hue = hue,
-                saturation = 0.7f,
-                value = 0.9f
+                saturation = 0.8f,
+                lightness = 0.4f
             )
         }
 
@@ -53,7 +53,10 @@ fun AppIcon(
                 .background(backgroundColor, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text(fallbackLetter.uppercase())
+            Text(
+                text = fallbackLetter.uppercase(),
+                color = Color.White
+            )
         }
     }
 }
