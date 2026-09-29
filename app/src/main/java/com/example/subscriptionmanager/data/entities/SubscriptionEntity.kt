@@ -17,7 +17,7 @@ data class SubscriptionEntity(
     val nextRenewalDate: Calendar, // We should keep this so that we don't have to calculate it
     val status: Boolean = true,
     val startDate: Calendar,
-    val score: Int = 0,
+    val score: Int = 0
 )
 
 

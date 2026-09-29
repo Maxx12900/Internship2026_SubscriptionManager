@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subscriptionmanager.SubscriptionManagerApplication
+import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import java.text.SimpleDateFormat
@@ -42,8 +43,16 @@ fun SubscriptionDetailsScreen(
     val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
 
     subscription?.let { sub ->
-        val formattedDate = remember(sub.nextRenewalDate) {
+        val formattedRenewalDate = remember(sub.nextRenewalDate) {
             dateFormat.format(sub.nextRenewalDate.time)
+        }
+
+        val formattedStartDate = remember(sub.startDate) {
+            dateFormat.format(sub.startDate.time)
+        }
+
+        val billingPeriodText = remember(sub.billingPeriod) {
+            BillingPeriod.entries[sub.billingPeriod].name.replace("_", " ")
         }
 
         Scaffold(
@@ -104,13 +113,30 @@ fun SubscriptionDetailsScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             InfoCard(
-                                "PRICE",
-                                "$${sub.price} / mo",
+                                label = "PRICE",
+                                value = "$${sub.price} / mo",
                                 Modifier.weight(1f)
                             )
                             InfoCard(
-                                "NEXT RENEWAL",
-                                formattedDate,
+                                label = "NEXT RENEWAL",
+                                value = formattedRenewalDate,
+                                Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            InfoCard(
+                                label = "BILLING PERIOD",
+                                value = billingPeriodText,
+                                Modifier.weight(1f)
+                            )
+                            InfoCard(
+                                label = "ADDED DATE",
+                                value = formattedStartDate,
                                 Modifier.weight(1f)
                             )
                         }
