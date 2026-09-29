@@ -1,9 +1,11 @@
 package com.example.subscriptionmanager
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
@@ -17,7 +19,9 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import com.example.subscriptionmanager.data.analysis.analyzeSubscription
 import com.example.subscriptionmanager.data.analysis.debugPrintPackageNames
 import com.example.subscriptionmanager.navigation.AppNavGraph
+import com.example.subscriptionmanager.notifications.createNotification
 import com.example.subscriptionmanager.notifications.createNotificationChannel
+import com.example.subscriptionmanager.notifications.sendNotification
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,7 +30,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         createNotificationChannel(this)
 
-        println(analyzeSubscription(this, "com.spotify.music"))
+        val n = createNotification(this, "test", "description test")
+        sendNotification(this, n)
 
         setContent {
             SubscriptionManagerTheme {
