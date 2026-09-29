@@ -3,9 +3,13 @@ package com.example.subscriptionmanager.data.entities
 import androidx.room3.ColumnTypeConverters
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
+import androidx.room3.Index
 import java.util.Calendar
 
-@Entity(tableName = "subscriptions")
+@Entity(
+    tableName = "subscriptions",
+    indices = [Index(value = ["packageName"], unique = true)]
+)
 @ColumnTypeConverters(DateConverters::class)
 data class SubscriptionEntity(
     @PrimaryKey(autoGenerate = true)
