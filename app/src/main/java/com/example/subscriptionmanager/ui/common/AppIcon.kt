@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import com.example.subscriptionmanager.util.getAppIcon
+import kotlin.math.absoluteValue
 
 @Composable
 fun AppIcon(
@@ -35,10 +36,21 @@ fun AppIcon(
             modifier = modifier.size(48.dp)
         )
     } else {
+
+        // Create a deterministic color based on the fallbackLetter
+        val backgroundColor = remember(fallbackLetter) {
+            val hue = (fallbackLetter.hashCode().absoluteValue % 10 * 30).toFloat()
+            Color.hsv(
+                hue = hue,
+                saturation = 0.7f,
+                value = 0.9f
+            )
+        }
+
         Box(
             modifier = modifier
                 .size(48.dp)
-                .background(Color.LightGray, RoundedCornerShape(12.dp)),
+                .background(backgroundColor, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text(fallbackLetter.uppercase())
