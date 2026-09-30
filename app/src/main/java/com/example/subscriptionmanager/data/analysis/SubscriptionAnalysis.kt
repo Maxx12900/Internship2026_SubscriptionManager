@@ -49,6 +49,8 @@ fun analyzeSubscription(activity: ComponentActivity, packageName: String): Analy
         }
         if (subscription == null) return@launch
 
+        // THE MONOLITH OF IF STATEMENTS
+        // BEND TO YOUR KNEES BEFORE THE ARTIFICIAL INTELLIGENCE OF THE FUTURE
         var interval: Long = 0
         if (subscription.billingPeriod == BillingPeriod.MONTHLY.ordinal) {
             val i = subscription.nextRenewalDate
@@ -108,9 +110,13 @@ fun analyzeSubscription(activity: ComponentActivity, packageName: String): Analy
 
         val usageTime = appUsageStat.totalTimeVisible  // for how long the app has been actively used
 
+        // Linear relation (the bigger the number, the bigger the score):
+        // - usage time
+        // Inverse relation (the bigger the number, the smaller the score):
+        // - price
+        // - billing period
         val usageScore: Double = 100000 * usageTime.toDouble() / (interval.toDouble() * subscription.price)
-        val scoreThreshold = 5
-
+        val scoreThreshold = 5  // score above this to consider the app as "actively used"
 
         activelyUsed = if (usageScore > scoreThreshold) {
             AnalysisResponseType.USED
