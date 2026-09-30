@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import com.example.subscriptionmanager.ui.common.padding
 
 sealed class BottomNavItem(
@@ -53,12 +55,15 @@ fun AppBottomNavigationBar(
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(padding),
+        color = Color(0xFFF2F2F7),
         shadowElevation = 0.dp,
         tonalElevation = 0.dp
     ) {
         NavigationBar(
-            tonalElevation = 0.dp
+            containerColor = Color(0xFFF2F2F7),
+            tonalElevation = 0.dp,
+            windowInsets = WindowInsets(0, 0, 0, 0),
+            modifier = Modifier.height(86.dp)
         ) {
             items.forEach { item ->
                 val selected = currentRoute == item.route

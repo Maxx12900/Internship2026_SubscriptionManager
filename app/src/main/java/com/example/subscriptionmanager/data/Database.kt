@@ -28,10 +28,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun notificationDao(): NotificationDao
     companion object {
         @Volatile // visible to all threads
-        private var INSTANCE: AppDatabase? = null // class property, isn't instance specific
+        private var INSTANCE: AppDatabase? = null
 
         fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this){ // if INSTANCE not null, returns INSTANCE, otherwise it returns a new instance.
+            return INSTANCE ?: synchronized(this){
                 val instance = Room.databaseBuilder<AppDatabase>(context.applicationContext, "subscriptions_db")
                     .setDriver(AndroidSQLiteDriver())
                     .build()

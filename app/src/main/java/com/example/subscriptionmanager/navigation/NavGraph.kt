@@ -21,8 +21,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.subscriptionmanager.ui.subscriptionAdd.SubscriptionAddScreen
 import com.example.subscriptionmanager.ui.subscriptionDetails.SubscriptionDetailsScreen
-import com.example.subscriptionmanager.ui.subscriptionEdit.SubscriptionEditScreen
 import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListScreen
+import androidx.compose.foundation.layout.WindowInsets
+
 
 sealed class Screen(val route: String) {
     object Home                 : Screen("home")
@@ -38,6 +39,8 @@ sealed class Screen(val route: String) {
     }
 }
 
+
+//@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AppNavGraph() {
     val navController: NavHostController = rememberNavController()
@@ -53,6 +56,7 @@ fun AppNavGraph() {
     )
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (currentRoute in topLevelRoutes) {
                 AppBottomNavigationBar(navController = navController)
@@ -62,15 +66,12 @@ fun AppNavGraph() {
         NavHost(
             navController = navController,
             startDestination = Screen.SubscriptionList.route,
-            modifier = Modifier.padding(
-                top = innerPadding.calculateTopPadding(),
-                bottom = innerPadding.calculateBottomPadding()
-            )
+            modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
             // Home Screen
             composable(Screen.Home.route) {}
 
-            // Subscription list screen
+            // Subscription List Screen
             composable(Screen.SubscriptionList.route) {
                 SubscriptionListScreen(
                     onAddClick = { navController.navigate(Screen.SubscriptionAdd.route) },
@@ -80,29 +81,22 @@ fun AppNavGraph() {
                 )
             }
 
-            // Analytics screen
+            // Analytics Screen
             composable(Screen.Analytics.route) {}
 
-            // Settings screen
+            // Settings Screen
             composable(Screen.Settings.route) {}
 
-            // Subscription Add screen
+            // Subscription Add Screen (Add Mode)
             composable(Screen.SubscriptionAdd.route) {
                 SubscriptionAddScreen(
-                    onSave = {
-                        if (navController.currentDestination?.route == Screen.SubscriptionAdd.route) {
-                            navController.popBackStack()
-                        }
-                    },
-                    onCancel = {
-                        if (navController.currentDestination?.route == Screen.SubscriptionAdd.route) {
-                            navController.popBackStack()
-                        }
-                    }
+                    subscriptionId = null,
+                    onSave = { navController.popBackStack() },
+                    onCancel = { navController.popBackStack() }
                 )
             }
 
-            // Subscription Details screen
+            // Subscription Details Screen
             composable(
                 route = Screen.SubscriptionDetails.route,
                 arguments = listOf(navArgument("id") { type = NavType.StringType })
@@ -111,19 +105,22 @@ fun AppNavGraph() {
                 SubscriptionDetailsScreen(
                     subscriptionName = id,
                     onBack = { navController.popBackStack() },
-                    onEdit = { navController.navigate(Screen.SubscriptionEdit.createRoute(id)) },
+                    onEdit = { subId ->
+                        navController.navigate(Screen.SubscriptionEdit.createRoute(subId.toString()))
+                    },
                     onDelete = { navController.popBackStack() }
                 )
             }
 
+            // Subscription Edit Screen
             composable(
                 route = Screen.SubscriptionEdit.route,
-                arguments = listOf(navArgument("id") { type = NavType.StringType })
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
             ) { backStackEntry ->
-                val id = backStackEntry.arguments?.getString("id") ?: ""
-                SubscriptionEditScreen(
-                    subscriptionName = id,
-                    onSaveSuccess = { navController.popBackStack() },
+                val id = backStackEntry.arguments?.getInt("id") ?: 0
+                SubscriptionAddScreen(
+                    subscriptionId = id,
+                    onSave = { navController.popBackStack() },
                     onCancel = { navController.popBackStack() }
                 )
             }

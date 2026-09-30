@@ -18,6 +18,7 @@ data class SubscriptionEntity(
     val status: Boolean = true,
     val startDate: Calendar,
     val score: Int = 0,
+    val description: String? = ""
 )
 
 

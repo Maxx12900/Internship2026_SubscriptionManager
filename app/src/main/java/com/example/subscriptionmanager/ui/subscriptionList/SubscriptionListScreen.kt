@@ -71,7 +71,7 @@ fun SubscriptionListScreen(
 
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = Color(0xFFF2F2F7),
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddClick,
@@ -102,7 +102,7 @@ fun SubscriptionListScreen(
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(padding),
+                verticalArrangement = Arrangement.spacedBy(padding)
             ) {
                 items(subscriptions) { (name, packageName, price, isActive) ->
                     SubscriptionCard(name, packageName, price, isActive, onClick = {onSubscriptionClick(name)})
