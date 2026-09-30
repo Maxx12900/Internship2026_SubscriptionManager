@@ -24,7 +24,7 @@ import java.util.Locale
 fun SubscriptionDetailsScreen(
     subscriptionName: String,
     onBack: () -> Unit,
-    onEdit: () -> Unit,
+    onEdit: (Int) -> Unit,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -114,7 +114,7 @@ fun SubscriptionDetailsScreen(
                         modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                     ) {
                         OutlinedButton(
-                            onClick = onEdit,
+                            onClick = { onEdit(sub.id) }, // <--- Pass sub.id integer
                             modifier = Modifier.weight(1f).height(50.dp),
                             shape = RoundedCornerShape(12.dp)
                         ) {

@@ -2,35 +2,12 @@ package com.example.subscriptionmanager.ui.subscriptionAdd
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,18 +15,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subscriptionmanager.SubscriptionManagerApplication
 import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.data.entities.Category
+import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.ui.common.fieldHeight
 import com.example.subscriptionmanager.ui.common.padding
-import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListViewModel
-import java.util.Calendar
+import com.example.subscriptionmanager.util.getInstalledApps
 
 @Composable
 fun SubscriptionAddScreen(
+    subscriptionId: Int? = null, // null = Add Mode, non-null = Edit Mode
     onSave: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -58,154 +37,291 @@ fun SubscriptionAddScreen(
     val viewModel: SubscriptionAddViewModel = viewModel(
         factory = GenericViewModelFactory { SubscriptionAddViewModel(repository) }
     )
-    val name by viewModel.name.collectAsState()
-    val category by viewModel.category.collectAsState()
-    val price by viewModel.price.collectAsState()
-    val billingPeriod by viewModel.billingPeriod.collectAsState()
-    val nextRenewalDate by viewModel.nextRenewalDate.collectAsState()
-    val error by viewModel.error.collectAsState()
 
-    var showDatePicker: Boolean by remember { mutableStateOf(false) }
+    val formState by viewModel.formState.collectAsState()
 
-    Scaffold { innerPadding ->
+    val installedApps = remember(context, formState.packageName, formState.name) {
+        val systemApps = getInstalledApps(context)
+        val currentPkg = formState.packageName
+
+        val appsList = mutableListOf<Pair<String?, String>>()
+        appsList.add(null to "None")
+
+        if (!currentPkg.isNullOrBlank() && systemApps.none { it.first == currentPkg }) {
+            val fallbackLabel = formState.name.ifBlank { currentPkg }
+            appsList.add(currentPkg to fallbackLabel)
+        }
+
+        appsList.addAll(systemApps)
+        appsList
+    }
+
+    LaunchedEffect(subscriptionId) {
+        if (subscriptionId != null) {
+            viewModel.loadSubscription(subscriptionId)
+        }
+    }
+
+    val isEditMode = subscriptionId != null
+    val screenTitle = if (isEditMode) "Edit Subscription" else "Add Subscription"
+    val buttonText = if (isEditMode) "Save Changes" else "Save Subscription"
+
+    Scaffold(
+        containerColor = Color.White
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(padding)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Add Subscription",
-                    style = typography.headlineLarge,
+                    text = screenTitle,
+                    style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .weight(1f)
-
+                    modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "Cancel",
-                    style = typography.titleSmall,
-                    modifier = Modifier
-                        .clickable { onCancel() }
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.Gray,
+                    modifier = Modifier.clickable { onCancel() }
                 )
             }
-            Text(
-                text = "Subscription name",
-                style = typography.bodySmall
-            )
+
+            formState.error?.let { err ->
+                Text(
+                    text = err,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // App Field with Dropdown Arrow
+            FieldLabel(label = "App", isRequired = false)
+
+            var appSearchQuery by remember { mutableStateOf("") }
+            var appDropdownExpanded by remember { mutableStateOf(false) }
+
+            // Sync initial value for Edit Mode
+            LaunchedEffect(formState.id) {
+                if (formState.id > 0 && formState.name.isNotBlank()) {
+                    appSearchQuery = formState.name
+                }
+            }
+
+            val filteredAppSuggestions = remember(appSearchQuery, installedApps) {
+                if (appSearchQuery.isBlank()) {
+                    installedApps
+                } else {
+                    installedApps.filter { (_, appName) ->
+                        appName.contains(appSearchQuery, ignoreCase = true)
+                    }
+                }
+            }
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                TextField(
+                    value = appSearchQuery,
+                    onValueChange = { input ->
+                        appSearchQuery = input
+                        appDropdownExpanded = true
+                        viewModel.updatePackageName(null) // Clears package if custom text is typed
+                        viewModel.updateName(input)
+                    },
+                    placeholder = { Text("Select or type app name", style = MaterialTheme.typography.bodyMedium, color = Color.LightGray) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFFF7F7F8),
+                        unfocusedContainerColor = Color(0xFFF7F7F8),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    // Dropdown menu and App Icon
+                    trailingIcon = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clickable { appDropdownExpanded = !appDropdownExpanded }
+                                .padding(end = 12.dp)
+                        ) {
+                            val currentPkg = formState.packageName
+                            if (!currentPkg.isNullOrBlank()) {
+                                AppIcon(
+                                    packageName = currentPkg,
+                                    fallbackLetter = appSearchQuery.take(1),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                            }
+                            Text(text = "▾", fontSize = 14.sp, color = Color.Gray)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(fieldHeight)
+                )
+
+                DropdownMenu(
+                    expanded = appDropdownExpanded && filteredAppSuggestions.isNotEmpty(),
+                    onDismissRequest = { appDropdownExpanded = false },
+                    properties = PopupProperties(focusable = false),
+                    modifier = Modifier.fillMaxWidth(0.9f)
+                ) {
+                    filteredAppSuggestions.forEach { (packageName, appName) ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = appName,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    if (packageName != null) {
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        AppIcon(
+                                            packageName = packageName,
+                                            fallbackLetter = appName.take(1),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+                            },
+                            onClick = {
+                                appSearchQuery = appName
+                                viewModel.updatePackageName(packageName)
+                                viewModel.updateName(appName)
+                                appDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Subscription name
+            FieldLabel(label = "Subscription name", isRequired = true)
             CustomTextField(
-                value = name,
+                value = formState.name,
                 onValueChange = { viewModel.updateName(it) },
                 placeholder = "Enter text here"
             )
-            Text(
-                text = "Category",
-                style = typography.bodySmall,
-                modifier = Modifier.padding()
-            )
+
+            // Category
+            FieldLabel(label = "Category", isRequired = true)
             CustomDropdownField(
-                selected = category,
+                selected = formState.category,
                 placeholder = "Select category",
-                options = Category.entries.filter { it != Category.NONE},
+                options = Category.entries.filter { it != Category.NONE },
                 toLabel = { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } },
-                onSelect = { viewModel.updateCategory(it)}
+                onSelect = { viewModel.updateCategory(it) }
             )
-            Text(
-                text = "Price",
-                style = typography.bodySmall,
-                modifier = Modifier.padding()
-            )
+
+            // Price
+            FieldLabel(label = "Price", isRequired = true)
             CustomTextField(
-                value = price,
+                value = formState.price,
                 onValueChange = { viewModel.updatePrice(it) },
                 placeholder = "9.99"
             )
-            Text(
-                text = "Billing period",
-                style = typography.bodySmall,
-                modifier = Modifier.padding()
-            )
+
+            // Billing period
+            FieldLabel(label = "Billing period", isRequired = true)
             CustomDropdownField(
-                selected = billingPeriod,
+                selected = formState.billingPeriod,
                 placeholder = "Select period",
                 options = BillingPeriod.entries,
-                toLabel = { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } },
+                toLabel = { it.name.lowercase().replace('_', ' ').replaceFirstChar { c -> c.uppercase() } },
                 onSelect = { viewModel.updateBillingPeriod(it) }
             )
-            Text(
-                text = "Next renewal date",
-                style = typography.bodySmall,
-                modifier = Modifier.padding()
+
+            // 6. Days before to remind
+            FieldLabel(label = "Days before to remind", isRequired = false)
+            CustomTextField(
+                value = formState.daysBeforeToRemind?.toString() ?: "",
+                onValueChange = { viewModel.updateDaysBeforeToRemind(it.toIntOrNull()) },
+                placeholder = "3"
             )
-            Box(
+
+            // 7. Description
+            FieldLabel(label = "Description", isRequired = false)
+            CustomTextField(
+                value = formState.description,
+                onValueChange = { viewModel.updateDescription(it) },
+                placeholder = "Optional description"
+            )
+
+            // 8. Active/Inactive Status Switch (In edit mode)
+            if (isEditMode) {
+                FieldLabel(label = "Active/Inactive", isRequired = false)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(fieldHeight)
+                        .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = if (formState.status) "Active" else "Inactive",
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                    Switch(
+                        checked = formState.status,
+                        onCheckedChange = { viewModel.updateStatus(it) },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFF635BFF)
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { viewModel.save(onSuccess = onSave) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(fieldHeight)
-                    .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
-                    .clickable { showDatePicker = true }
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart
+                    .height(50.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF635BFF))
             ) {
                 Text(
-                    text = nextRenewalDate?.let { formatDate(it) } ?: "Select date",
-                    color = if (nextRenewalDate == null) Color.LightGray else Color.Black,
-                    fontSize = 14.sp
+                    text = buttonText,
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp
                 )
             }
-            Text(
-                text = error,
-                color = Color.Red,
-                style = typography.bodySmall
-            )
-            // Save Button
-            Button(
-                onClick = { viewModel.save(onSave) }
-            ) {
-                Text("Save Subscription", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-            }
-        }
 
-        if (showDatePicker) {
-            val datePickerState = rememberDatePickerState()
-
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancel")
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            datePickerState.selectedDateMillis?.let { viewModel.updateRenewalDate(it) }
-                            showDatePicker = false
-                        }
-                    ) {
-                        Text("OK")
-                    }
-                }
-            ) {
-                DatePicker(state = datePickerState)
-            }
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
 
-private fun formatDate(calendar: Calendar): String {
-    val months = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-    val day = calendar.get(Calendar.DAY_OF_MONTH)
-    val month = months[calendar.get(Calendar.MONTH)]
-    val year = calendar.get(Calendar.YEAR)
-    return "$day $month $year"
+@Composable
+private fun FieldLabel(label: String, isRequired: Boolean) {
+    Row {
+        Text(text = label, style = MaterialTheme.typography.bodySmall)
+        if (isRequired) {
+            Text(text = "*", style = MaterialTheme.typography.bodySmall, color = Color(0xFFEE6C6D))
+        }
+    }
 }
+
 @Composable
 private fun CustomTextField(
     value: String,
@@ -216,13 +332,14 @@ private fun CustomTextField(
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
-        placeholder = {
-            Text(
-                placeholder,
-                style = typography.bodyMedium
-            )
-        },
-        shape = RoundedCornerShape(padding),
+        placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium, color = Color.LightGray) },
+        shape = RoundedCornerShape(12.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color(0xFFF7F7F8),
+            unfocusedContainerColor = Color(0xFFF7F7F8),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .height(fieldHeight)
@@ -235,29 +352,35 @@ private fun <T> CustomDropdownField(
     placeholder: String,
     options: List<T>,
     toLabel: (T) -> String,
+    toIcon: (@Composable (T) -> Unit)? = null,
     onSelect: (T) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val displayLabel = selected?.let(toLabel)?.ifBlank { null }
 
-    Card(
-        onClick = { expanded = !expanded },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(padding)
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(fieldHeight)
-                .padding(horizontal = padding),
+                .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = selected?.let(toLabel) ?: placeholder,
+                text = displayLabel ?: placeholder,
                 fontSize = 14.sp,
-                color = if (selected == null) Color.LightGray else Color.Black
+                color = if (displayLabel == null) Color.LightGray else Color.Black
             )
-            Text(text = "▾", fontSize = 12.sp, color = Color.Gray)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (selected != null && toIcon != null) {
+                    toIcon(selected)
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                Text(text = "▾", fontSize = 12.sp, color = Color.Gray)
+            }
         }
 
         DropdownMenu(
@@ -266,7 +389,23 @@ private fun <T> CustomDropdownField(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(toLabel(option)) },
+                    text = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = toLabel(option),
+                                fontSize = 14.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            toIcon?.let { icon ->
+                                Spacer(modifier = Modifier.width(12.dp))
+                                icon(option)
+                            }
+                        }
+                    },
                     onClick = {
                         onSelect(option)
                         expanded = false

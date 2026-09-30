@@ -17,10 +17,23 @@ interface CategoryDao {
     @Query("SELECT * FROM categories")
     fun getAllCategories(): Flow<List<CategoryEntity>>
 
+    @Query("SELECT * FROM categories WHERE subscriptionId = :subscriptionId LIMIT 1")
+    suspend fun getCategoryForSubscription(subscriptionId: Int): CategoryEntity?
+
+    @Query("UPDATE categories SET category = :bitmask WHERE subscriptionId = :subscriptionId")
+    suspend fun updateCategory(subscriptionId: Int, bitmask: Long)
+
     // Let's hope this works, needs testing...
-    @Query("SELECT subscriptions.* FROM subscriptions INNER JOIN categories ON subscriptions.id = categories.subscriptionId WHERE (categories.category & :categories) > 0")
+//    @Query("SELECT subscriptions.* FROM subscriptions INNER JOIN categories ON subscriptions.id = categories.subscriptionId WHERE (categories.category & :categories) > 0")
+//    fun getSubscriptionsByCategory(categories: Long): Flow<List<SubscriptionEntity>>
+    @Query("""
+        SELECT subscriptions.* FROM subscriptions 
+        LEFT JOIN categories ON subscriptions.id = categories.subscriptionId 
+        WHERE :categories = 0 OR categories.category IS NULL OR categories.category = 0 OR (categories.category & :categories) > 0
+    """)
     fun getSubscriptionsByCategory(categories: Long): Flow<List<SubscriptionEntity>>
 }
+
 
 fun sortSubscriptionsByName(subscriptions: Flow<List<SubscriptionEntity>>, isAsc: Boolean): Flow<List<SubscriptionEntity>> {
     val newList = subscriptions.map {

@@ -45,6 +45,12 @@ class SubscriptionRepository(
     fun allCategories(): Flow<List<CategoryEntity>> =
         categoryDao.getAllCategories()
 
+    suspend fun getCategoryForSubscription(subscriptionId: Int): CategoryEntity? =
+        categoryDao.getCategoryForSubscription(subscriptionId)
+
+    suspend fun updateCategory(subscriptionId: Int, bitmask: Long) =
+        categoryDao.updateCategory(subscriptionId, bitmask)
+
     suspend fun insertCategory(category: CategoryEntity)=
         categoryDao.insertCategory(category)
 
@@ -54,6 +60,8 @@ class SubscriptionRepository(
 
     suspend fun insertNotification(notification: NotificationEntity): Long =
         notificationDao.insertNotification(notification)
+
+
 
     suspend fun getSubscriptions(
         categories: Set<Category> = emptySet(),
