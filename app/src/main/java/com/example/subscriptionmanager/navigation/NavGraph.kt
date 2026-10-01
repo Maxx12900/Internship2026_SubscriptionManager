@@ -1,6 +1,7 @@
 package com.example.subscriptionmanager.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -14,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.subscriptionmanager.ui.home.HomeScreen
+import com.example.subscriptionmanager.ui.SettingsScreen.SettingsScreen
 import com.example.subscriptionmanager.ui.subscriptionAdd.SubscriptionAddScreen
 import com.example.subscriptionmanager.ui.subscriptionDetails.SubscriptionDetailsScreen
 import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListScreen
@@ -85,13 +87,26 @@ fun AppNavGraph() {
 
             // Settings screen
             composable(Screen.Settings.route) {}
+            // Settings screen
+            composable(Screen.Settings.route) {
+                SettingsScreen(
+                    onLogOut = {}
+                )
+            }
 
             // Subscription Add screen
             composable(Screen.SubscriptionAdd.route) {
                 SubscriptionAddScreen(
-                    subscriptionId = null,
-                    onSave = { navController.popBackStack() },
-                    onCancel = { navController.popBackStack() }
+                    onSave = {
+                        if (navController.currentDestination?.route == Screen.SubscriptionAdd.route) {
+                            navController.popBackStack()
+                        }
+                    },
+                    onCancel = {
+                        if (navController.currentDestination?.route == Screen.SubscriptionAdd.route) {
+                            navController.popBackStack()
+                        }
+                    }
                 )
             }
 

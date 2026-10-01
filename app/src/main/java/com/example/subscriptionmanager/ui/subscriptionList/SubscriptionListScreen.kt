@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,6 +24,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -47,6 +49,7 @@ import com.example.subscriptionmanager.data.entities.SortBy
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.ui.common.padding
+import com.example.subscriptionmanager.util.CurrencyManager
 
 @Composable
 // Main function, draws the whole screen with list of subscriptions
@@ -70,11 +73,13 @@ fun SubscriptionListScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddClick,
+                modifier = Modifier.padding(bottom = 60.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "")
+                Icon(Icons.Default.Add, contentDescription = "Add") // Add - ""
             }
         }
     ) { innerPadding ->
@@ -93,6 +98,7 @@ fun SubscriptionListScreen(
                     text = "Subscription List",
                     style = typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
                 )
                 TextButton(onClick = { showFilterDialog = true }) { Text("Options") }
@@ -100,7 +106,8 @@ fun SubscriptionListScreen(
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(padding)
+                verticalArrangement = Arrangement.spacedBy(padding),
+                contentPadding = PaddingValues(bottom = 80.dp)
             ) {
                 items(subscriptions, key = { it.id }) { (id, name, packageName, price, isActive) ->
                     SubscriptionCard(name = name, packageName = packageName, price = price, isActive = isActive, onClick = {onSubscriptionClick(id)})
@@ -135,6 +142,7 @@ fun SubscriptionCard(
     isActive : Boolean,
     onClick:() -> Unit
 ) {
+    val currentCurrency by CurrencyManager.currency.collectAsState()
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -148,7 +156,10 @@ fun SubscriptionCard(
                 .padding(padding),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AppIcon(packageName, fallbackLetter = "${name.first()}")
+            AppIcon(
+                packageName = packageName,
+                fallbackLetter = if (name.isBlank()) "?" else "${name.first()}"
+            )
 
             Spacer(modifier = Modifier.size(padding))
 
@@ -160,7 +171,7 @@ fun SubscriptionCard(
             Column(
                 horizontalAlignment = Alignment.End
             ) {
-                Text(text = "$$price")
+                Text(text = CurrencyManager.formatPrice(price, currentCurrency))
                 Text(
                     if (isActive) "Active" else "Inactive"
                 )

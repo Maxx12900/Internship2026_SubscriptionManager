@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subscriptionmanager.SubscriptionManagerApplication
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
+import com.example.subscriptionmanager.util.CurrencyManager
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -29,6 +30,7 @@ fun SubscriptionDetailsScreen(
 ) {
     val context = LocalContext.current
     val repository = (context.applicationContext as SubscriptionManagerApplication).repository
+    val currentCurrency by CurrencyManager.currency.collectAsState()
     val viewModel: SubscriptionDetailsViewModel = viewModel(
         factory = GenericViewModelFactory { SubscriptionDetailsViewModel(repository) }
     )
@@ -47,7 +49,7 @@ fun SubscriptionDetailsScreen(
         }
 
         Scaffold(
-            containerColor = Color(0xFFFBFBFF),
+            containerColor = MaterialTheme.colorScheme.background, // <--- DARK MODE BACKGROUND
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
             LazyColumn(
@@ -64,12 +66,17 @@ fun SubscriptionDetailsScreen(
                             onClick = onBack,
                             modifier = Modifier.offset(x = (-12).dp, y = 8.dp)
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
                         }
                         Text(
                             text = sub.name,
                             style = MaterialTheme.typography.headlineLarge,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -79,11 +86,11 @@ fun SubscriptionDetailsScreen(
                         Surface(
                             shape = RoundedCornerShape(24.dp),
                             shadowElevation = 2.dp,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
                             AppIcon(
                                 packageName = sub.packageName,
-                                fallbackLetter = sub.name.take(1),
+                                fallbackLetter = sub.name.take(1).ifBlank { "?" },
                                 modifier = Modifier.size(80.dp).padding(12.dp)
                             )
                         }
@@ -102,7 +109,11 @@ fun SubscriptionDetailsScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            InfoCard("PRICE", "$${sub.price} / mo", Modifier.weight(1f))
+                            InfoCard(
+                                label = "PRICE",
+                                value = "${CurrencyManager.formatPrice(sub.price, currentCurrency)} / mo",
+                                modifier = Modifier.weight(1f)
+                            )
                             InfoCard("NEXT RENEWAL", formattedDate, Modifier.weight(1f))
                         }
                     }
@@ -114,9 +125,12 @@ fun SubscriptionDetailsScreen(
                         modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                     ) {
                         OutlinedButton(
-                            onClick = { onEdit(sub.id) }, // <--- Pass sub.id integer
+                            onClick = { onEdit(sub.id) },
                             modifier = Modifier.weight(1f).height(50.dp),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
                         ) {
                             Text("Edit")
                         }
@@ -142,13 +156,22 @@ private fun InfoCard(label: String, value: String, modifier: Modifier = Modifier
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
             Spacer(Modifier.height(4.dp))
-            Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

@@ -6,10 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,18 +25,27 @@ import com.example.subscriptionmanager.notifications.createNotification
 import com.example.subscriptionmanager.notifications.createNotificationChannel
 import com.example.subscriptionmanager.notifications.sendNotification
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
-
+import com.example.subscriptionmanager.util.AppThemeMode
+import com.example.subscriptionmanager.util.ThemeManager
+import com.example.subscriptionmanager.util.CurrencyManager
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        createNotificationChannel(this)
 
-        val n = createNotification(this, "test", "description test")
-        sendNotification(this, n)
+        ThemeManager.init(this)
+        CurrencyManager.init(this)
 
         setContent {
-            SubscriptionManagerTheme {
+            val themeMode by ThemeManager.themeMode.collectAsState()
+
+            val isDark = when (themeMode) {
+                AppThemeMode.SYSTEM -> isSystemInDarkTheme()
+                AppThemeMode.LIGHT -> false
+                AppThemeMode.DARK -> true
+            }
+
+            SubscriptionManagerTheme(darkTheme = isDark) {
                 AppNavGraph()
             }
         }

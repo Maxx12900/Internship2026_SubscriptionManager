@@ -28,7 +28,7 @@ import com.example.subscriptionmanager.util.getInstalledApps
 
 @Composable
 fun SubscriptionAddScreen(
-    subscriptionId: Int? = null, // null = Add Mode, non-null = Edit Mode
+    subscriptionId: Int? = null,
     onSave: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -67,7 +67,7 @@ fun SubscriptionAddScreen(
     val buttonText = if (isEditMode) "Save Changes" else "Save Subscription"
 
     Scaffold(
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -85,12 +85,13 @@ fun SubscriptionAddScreen(
                     text = screenTitle,
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "Cancel",
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable { onCancel() }
                 )
             }
@@ -104,13 +105,12 @@ fun SubscriptionAddScreen(
                 )
             }
 
-            // App Field with Dropdown Arrow
+            // App Field
             FieldLabel(label = "App", isRequired = false)
 
             var appSearchQuery by remember { mutableStateOf("") }
             var appDropdownExpanded by remember { mutableStateOf(false) }
 
-            // Sync initial value for Edit Mode
             LaunchedEffect(formState.id) {
                 if (formState.id > 0 && formState.name.isNotBlank()) {
                     appSearchQuery = formState.name
@@ -133,19 +133,20 @@ fun SubscriptionAddScreen(
                     onValueChange = { input ->
                         appSearchQuery = input
                         appDropdownExpanded = true
-                        viewModel.updatePackageName(null) // Clears package if custom text is typed
+                        viewModel.updatePackageName(null)
                         viewModel.updateName(input)
                     },
-                    placeholder = { Text("Select or type app name", style = MaterialTheme.typography.bodyMedium, color = Color.LightGray) },
+                    placeholder = { Text("Select or type app name", style = MaterialTheme.typography.bodyMedium, color = Color.Gray) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF7F7F8),
-                        unfocusedContainerColor = Color(0xFFF7F7F8),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
-                    // Dropdown menu and App Icon
                     trailingIcon = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -157,12 +158,12 @@ fun SubscriptionAddScreen(
                             if (!currentPkg.isNullOrBlank()) {
                                 AppIcon(
                                     packageName = currentPkg,
-                                    fallbackLetter = appSearchQuery.take(1),
+                                    fallbackLetter = appSearchQuery.take(1).ifBlank { "?" },
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                             }
-                            Text(text = "▾", fontSize = 14.sp, color = Color.Gray)
+                            Text(text = "▾", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     },
                     modifier = Modifier
@@ -193,7 +194,7 @@ fun SubscriptionAddScreen(
                                         Spacer(modifier = Modifier.width(12.dp))
                                         AppIcon(
                                             packageName = packageName,
-                                            fallbackLetter = appName.take(1),
+                                            fallbackLetter = appName.take(1).ifBlank { "?" },
                                             modifier = Modifier.size(24.dp)
                                         )
                                     }
@@ -246,7 +247,7 @@ fun SubscriptionAddScreen(
                 onSelect = { viewModel.updateBillingPeriod(it) }
             )
 
-            // 6. Days before to remind
+            // Days before to remind
             FieldLabel(label = "Days before to remind", isRequired = false)
             CustomTextField(
                 value = formState.daysBeforeToRemind?.toString() ?: "",
@@ -254,7 +255,7 @@ fun SubscriptionAddScreen(
                 placeholder = "3"
             )
 
-            // 7. Description
+            // Description
             FieldLabel(label = "Description", isRequired = false)
             CustomTextField(
                 value = formState.description,
@@ -262,14 +263,14 @@ fun SubscriptionAddScreen(
                 placeholder = "Optional description"
             )
 
-            // 8. Active/Inactive Status Switch (In edit mode)
+            // Status Switch
             if (isEditMode) {
                 FieldLabel(label = "Active/Inactive", isRequired = false)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(fieldHeight)
-                        .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -277,7 +278,7 @@ fun SubscriptionAddScreen(
                     Text(
                         text = if (formState.status) "Active" else "Inactive",
                         fontSize = 14.sp,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Switch(
                         checked = formState.status,
@@ -315,7 +316,11 @@ fun SubscriptionAddScreen(
 @Composable
 private fun FieldLabel(label: String, isRequired: Boolean) {
     Row {
-        Text(text = label, style = MaterialTheme.typography.bodySmall)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         if (isRequired) {
             Text(text = "*", style = MaterialTheme.typography.bodySmall, color = Color(0xFFEE6C6D))
         }
@@ -332,11 +337,13 @@ private fun CustomTextField(
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
-        placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium, color = Color.LightGray) },
+        placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium, color = Color.Gray) },
         shape = RoundedCornerShape(12.dp),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF7F7F8),
-            unfocusedContainerColor = Color(0xFFF7F7F8),
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),
@@ -363,7 +370,7 @@ private fun <T> CustomDropdownField(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(fieldHeight)
-                .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                 .clickable { expanded = !expanded }
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -372,14 +379,14 @@ private fun <T> CustomDropdownField(
             Text(
                 text = displayLabel ?: placeholder,
                 fontSize = 14.sp,
-                color = if (displayLabel == null) Color.LightGray else Color.Black
+                color = if (displayLabel == null) Color.Gray else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (selected != null && toIcon != null) {
                     toIcon(selected)
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                Text(text = "▾", fontSize = 12.sp, color = Color.Gray)
+                Text(text = "▾", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
