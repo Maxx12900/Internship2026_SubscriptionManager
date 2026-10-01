@@ -24,6 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import com.example.subscriptionmanager.ui.common.padding
 
@@ -54,7 +55,7 @@ fun AppBottomNavigationBar(
     val currentRoute = navBackStackEntry?.destination?.route
 
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().navigationBarsPadding(),
         color = Color(0xFFF2F2F7),
         shadowElevation = 0.dp,
         tonalElevation = 0.dp

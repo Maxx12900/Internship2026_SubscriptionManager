@@ -71,6 +71,7 @@ fun SubscriptionListScreen(
 
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = Color(0xFFF2F2F7),
         floatingActionButton = {
             FloatingActionButton(
