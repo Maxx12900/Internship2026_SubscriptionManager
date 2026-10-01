@@ -6,7 +6,7 @@ import androidx.room3.PrimaryKey
 import java.util.Calendar
 
 @Entity(tableName = "subscriptions")
-@ColumnTypeConverters(DateConverters::class)
+@ColumnTypeConverters(DateConverters::class, BillingPeriodConverters::class)
 data class SubscriptionEntity(
     @PrimaryKey(autoGenerate = true)
     val id:Int = 0,

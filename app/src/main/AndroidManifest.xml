@@ -8,7 +8,7 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="QueryAllPackagesPermission"
+        tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission"
         />
 
     <application
@@ -22,11 +22,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SubscriptionManager">
 
+        <receiver android:name=".notifications.ReminderReceiver" android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.SubscriptionManager"
             android:windowSoftInputMode="adjustResize">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
