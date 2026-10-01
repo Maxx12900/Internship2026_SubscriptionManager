@@ -88,10 +88,12 @@
     <string name="total_mo">Всего/мес</string>
 
     <!-- Details Screen -->
-    <string name="price_label">ЦЕНА</string>
-    <string name="next_renewal_label">СЛЕДУЮЩЕЕ СПИСАНИЕ</string>
+    <string name="price_label">Цена</string>
+    <string name="next_renewal_label">Следующее продление</string>
     <string name="delete">Удалить</string>
     <string name="edit">Изменить</string>
+    <string name="added">Добавлен</string>
+    <string name="no_description">Без описания</string>
 
     <!-- Billing Periods -->
     <string name="weekly">Еженедельно</string>
@@ -127,4 +129,9 @@
     <string name="per_year">/ год</string>
     <string name="per_month">/ мес</string>
 
+    <string name="log_in">Войти</string>
+    <string name="create_account">Создать учетную</string>
+    <string name="subscription_manager">Менеджер подписок</string>
+    <string name="password">Пароль</string>
+    <string name="eight_chars">Не менее 8 символов</string>
 </resources>

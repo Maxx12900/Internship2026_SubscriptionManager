@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.subscriptionmanager.R
 
 @Composable
 fun LoginScreen(
@@ -29,15 +31,10 @@ fun LoginScreen(
     val context = LocalContext.current
     AuthLayout(
         vm = vm,
-        buttonText = "Log in",
+        buttonText = stringResource(R.string.log_in),
         onSubmit = { vm.logIn(onLoggedIn) },
     ) {
-        Row(Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (!vm.isRegistered()) {
-                Text("Don't have an account ? ", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                LinkText("Create here", onCreateAccount, underline = true)
-            }
-        }
+        Row(Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {}
     }
 }
 
@@ -49,7 +46,7 @@ fun SignUpScreen(
     val context = LocalContext.current
     AuthLayout(
         vm = vm,
-        buttonText = "Create Account",
+        buttonText = stringResource(R.string.create_account),
         onSubmit = { vm.signUp(onAccountCreated) },
     ) {}
 }
@@ -68,15 +65,15 @@ private fun AuthLayout(
             .systemBarsPadding()
             .padding(horizontal = 20.dp, vertical = 32.dp),
     ) {
-        Text("Subscription\nManager", fontSize = 40.sp, lineHeight = 48.sp,
+        Text(stringResource(R.string.subscription_manager), fontSize = 40.sp, lineHeight = 48.sp,
             fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(28.dp))
 
         Spacer(Modifier.height(16.dp))
 
-        FieldLabel("Password")
+        FieldLabel(stringResource(R.string.password))
         AuthField(vm.password, vm.onPassword(), KeyboardType.Password, password = true)
-        Text("At least 8 characters", fontSize = 11.sp,
+        Text(stringResource(R.string.eight_chars), fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 5.dp, top = 4.dp))
 
         vm.error?.let {
