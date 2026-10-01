@@ -53,6 +53,7 @@ dependencies {
     // Room
     implementation(libs.androidx.room3.common)
     implementation(libs.androidx.room3.runtime)
+    implementation(libs.androidx.work.runtime.ktx)
     ksp(libs.androidx.room3.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

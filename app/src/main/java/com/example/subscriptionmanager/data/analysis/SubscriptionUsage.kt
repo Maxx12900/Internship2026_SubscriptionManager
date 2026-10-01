@@ -10,35 +10,35 @@ import android.os.Process
 import android.provider.Settings
 import androidx.core.net.toUri
 
-fun requestPermissionForUsageDataAccess(activity: Activity): Int {
-    val appOps = activity.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+fun requestPermissionForUsageDataAccess(context: Context): Int {
+    val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
 
     val mode = appOps.checkOpNoThrow(
         AppOpsManager.OPSTR_GET_USAGE_STATS,
         Process.myUid(),
-        activity.packageName
+        context.packageName
     )
 
-    if (mode != AppOpsManager.MODE_ALLOWED) {
+    if (mode != AppOpsManager.MODE_ALLOWED && context is Activity) {
         // request permission
         val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-            data = "package:${activity.packageName}".toUri()
+            data = "package:${context.packageName}".toUri()
         }
-        activity.startActivity(intent)
+        context.startActivity(intent)
     }
 
     return mode
 }
 
 
-fun getApplicationsUsageData(activity: Activity, intervalMillis: Long): Map<String, UsageStats> {
+fun getApplicationsUsageData(context: Context, intervalMillis: Long): Map<String, UsageStats> {
     // intervalMillis - how long is the interval you want to analyze (in milliseconds).
 
-    if (requestPermissionForUsageDataAccess(activity) != AppOpsManager.MODE_ALLOWED) {
+    if (requestPermissionForUsageDataAccess(context) != AppOpsManager.MODE_ALLOWED) {
         return mapOf()  // womp womp, no analysis for you today
     }
 
-    val usageStatsManager = activity.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+    val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
     val now = System.currentTimeMillis()
 

@@ -2,6 +2,7 @@ package com.example.subscriptionmanager.notifications
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -13,10 +14,11 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.subscriptionmanager.MainActivity
 import com.example.subscriptionmanager.R
+import java.util.Calendar
 
-const val CHANNEL_ID: String = "subscriptionManager"
 private var current_notification_id = 0
 
 data class Notification(
@@ -24,10 +26,14 @@ data class Notification(
     val builder: NotificationCompat.Builder
 )
 
-fun createNotification(context: Context, title: String, content: String): Notification {
+enum class ChannelIds(val id: String) {
+    RENEWAL("Renewal")
+}
+
+fun createNotification(context: Context, title: String, content: String, channelId: ChannelIds): Notification {
     current_notification_id++  // make sure each notification is unique
 
-    val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+    val builder = NotificationCompat.Builder(context, channelId.id)
         .setSmallIcon(R.drawable.ic_home)
         .setContentTitle(title)
         .setContentText(content)
@@ -38,19 +44,23 @@ fun createNotification(context: Context, title: String, content: String): Notifi
     return notification
 }
 
-fun showNotification(activity: Activity, notification: Notification) {
-    with (NotificationManagerCompat.from(activity)) {
-        if (ActivityCompat.checkSelfPermission(
-                activity,
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun showNotification(context: Context, notification: Notification) {
+    with (NotificationManagerCompat.from(context)) {
+        if (ContextCompat.checkSelfPermission(
+                context,
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED) {
-            // Request permission to send notifications here
+
+            // Request permission to send notifications here, but only if context is an instance of Activity
             // TODO: if the user already denied giving access to notifications, persuade them
-            ActivityCompat.requestPermissions(
-                activity,
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                1
-            )
+            if (context is Activity) {
+                ActivityCompat.requestPermissions(
+                    context,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1
+                )
+            }
 
             return@with  // return from the current "with" label
         }
@@ -78,11 +88,9 @@ fun sendNotification(activity: Activity, notification: Notification) {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun createNotificationChannel(context: Context) {
-    val name: String = "Subscription Manager Notification Channel";
-    val descriptionText: String = "Channel for notifications from Subscription Manager";
+fun createNotificationChannel(context: Context, name: String, descriptionText: String, channelId: ChannelIds) {
     val importance = NotificationManager.IMPORTANCE_DEFAULT
-    val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+    val channel = NotificationChannel(channelId.id, name, importance).apply {
         description = descriptionText
     }
 
@@ -91,4 +99,21 @@ fun createNotificationChannel(context: Context) {
     ) as NotificationManager
 
     notificationManager.createNotificationChannel(channel)
+}
+
+
+fun scheduleReminder(context: Context, dateTime: Calendar) {
+    val alarmManager = context.getSystemService(AlarmManager::class.java)
+
+    val intent = Intent(context, ReminderReceiver::class.java)
+    val pendingIntent = PendingIntent.getBroadcast(
+        context, 1001, intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val triggerAtMillis = dateTime.timeInMillis
+
+    alarmManager.setAndAllowWhileIdle(
+        AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent
+    )
 }
