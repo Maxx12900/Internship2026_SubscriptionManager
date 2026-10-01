@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subscriptionmanager.SubscriptionManagerApplication
+import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import java.text.SimpleDateFormat
@@ -42,12 +43,23 @@ fun SubscriptionDetailsScreen(
     val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
 
     subscription?.let { sub ->
-        val formattedDate = remember(sub.nextRenewalDate) {
+        val formattedRenewalDate = remember(sub.nextRenewalDate) {
             dateFormat.format(sub.nextRenewalDate.time)
         }
 
+        val formattedStartDate = remember(sub.startDate) {
+            dateFormat.format(sub.startDate.time)
+        }
+
+        // Map the ordinal Int back to the Enum name
+        val billingPeriodText = remember(sub.billingPeriod) {
+            BillingPeriod.entries.getOrNull(sub.billingPeriod)?.name
+                ?.replace("_", " ")
+                ?: "Unknown"
+        }
+
         Scaffold(
-            containerColor = Color(0xFFFBFBFF),
+            containerColor = MaterialTheme.colorScheme.background,
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
             LazyColumn(
@@ -79,7 +91,8 @@ fun SubscriptionDetailsScreen(
                         Surface(
                             shape = RoundedCornerShape(24.dp),
                             shadowElevation = 2.dp,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.surface
+
                         ) {
                             AppIcon(
                                 packageName = sub.packageName,
@@ -91,7 +104,7 @@ fun SubscriptionDetailsScreen(
                         Column {
                             Text(
                                 text = if (sub.status) "Active" else "Inactive",
-                                color = if (sub.status) Color(0xFF4CAF50) else Color.Red,
+                                color = if (sub.status) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMedium
                             )
@@ -102,8 +115,94 @@ fun SubscriptionDetailsScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            InfoCard("PRICE", "$${sub.price} / mo", Modifier.weight(1f))
-                            InfoCard("NEXT RENEWAL", formattedDate, Modifier.weight(1f))
+                            InfoCard(
+                                label = "PRICE",
+                                value = "$${sub.price} / mo",
+                                Modifier.weight(1f)
+                            )
+                            InfoCard(
+                                label = "NEXT RENEWAL",
+                                value = formattedRenewalDate,
+                                Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            InfoCard(
+                                label = "BILLING PERIOD",
+                                value = billingPeriodText,
+                                Modifier.weight(1f)
+                            )
+                            InfoCard(
+                                label = "ADDED DATE",
+                                value = formattedStartDate,
+                                Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                /* Undecided with which design should be used
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = "    DESCRIPTION",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shadowElevation = 0.dp // Keeping it flat to match InfoCards
+                        ) {
+                            Text(
+                                text = sub.description ?: "No description provided",
+                                modifier = Modifier.padding(16.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                */
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    ) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, color = MaterialTheme.colorScheme.outlineVariant )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "DESCRIPTION",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Text(
+                                    text = sub.description?.takeIf { it.isNotBlank() } ?: "No description provided",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
@@ -126,9 +225,12 @@ fun SubscriptionDetailsScreen(
                             },
                             modifier = Modifier.weight(1f).height(50.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            )
                         ) {
-                            Text("Delete", color = Color.White)
+                            Text("Delete")
                         }
                     }
                 }
@@ -142,13 +244,22 @@ private fun InfoCard(label: String, value: String, modifier: Modifier = Modifier
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), // Theme-aware
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant // Theme-aware
+            )
             Spacer(Modifier.height(4.dp))
-            Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(
+                value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant // Theme-aware
+            )
         }
     }
 }
