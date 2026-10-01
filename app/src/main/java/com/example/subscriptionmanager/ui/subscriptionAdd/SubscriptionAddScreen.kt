@@ -10,9 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
@@ -136,7 +138,13 @@ fun SubscriptionAddScreen(
                         viewModel.updatePackageName(null) // Clears package if custom text is typed
                         viewModel.updateName(input)
                     },
-                    placeholder = { Text("Select or type app name", style = MaterialTheme.typography.bodyMedium, color = Color.LightGray) },
+                    placeholder = {
+                        Text(
+                            "Select or type app name",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.LightGray
+                        )
+                    },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
@@ -169,34 +177,42 @@ fun SubscriptionAddScreen(
                         .fillMaxWidth()
                         .height(fieldHeight)
                 )
-
                 DropdownMenu(
                     expanded = appDropdownExpanded && filteredAppSuggestions.isNotEmpty(),
                     onDismissRequest = { appDropdownExpanded = false },
                     properties = PopupProperties(focusable = false),
-                    modifier = Modifier.fillMaxWidth(0.9f)
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .heightIn(max = 280.dp)   // caps a long list instead of covering the whole screen
+                        .background(Color.White, RoundedCornerShape(12.dp))
                 ) {
-                    filteredAppSuggestions.forEach { (packageName, appName) ->
+                    filteredAppSuggestions.forEachIndexed { index, (packageName, appName) ->
                         DropdownMenuItem(
                             text = {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Text(
-                                        text = appName,
-                                        fontSize = 14.sp,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    if (packageName != null) {
-                                        Spacer(modifier = Modifier.width(12.dp))
+                                    // icon first — reads better left-to-right than icon trailing
+                                    Box(
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                    ) {
                                         AppIcon(
                                             packageName = packageName,
                                             fallbackLetter = appName.take(1),
-                                            modifier = Modifier.size(24.dp)
+                                            modifier = Modifier.fillMaxSize()
                                         )
                                     }
+                                    Text(
+                                        text = appName,
+                                        fontSize = 14.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f)
+                                    )
                                 }
                             },
                             onClick = {
@@ -204,8 +220,16 @@ fun SubscriptionAddScreen(
                                 viewModel.updatePackageName(packageName)
                                 viewModel.updateName(appName)
                                 appDropdownExpanded = false
-                            }
+                            },
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
                         )
+                        // thin separator between rows, skipped after the last item
+                        if (index != filteredAppSuggestions.lastIndex) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = Color(0xFFF0F0F0)
+                            )
+                        }
                     }
                 }
             }
