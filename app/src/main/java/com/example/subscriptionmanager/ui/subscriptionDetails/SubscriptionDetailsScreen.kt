@@ -22,7 +22,7 @@ import java.util.Locale
 
 @Composable
 fun SubscriptionDetailsScreen(
-    subscriptionName: String,
+    subscriptionId: Int,
     onBack: () -> Unit,
     onEdit: (Int) -> Unit,
     onDelete: () -> Unit
@@ -35,8 +35,8 @@ fun SubscriptionDetailsScreen(
 
     val subscription by viewModel.subscription.collectAsState()
 
-    LaunchedEffect(subscriptionName) {
-        viewModel.loadSubscription(subscriptionName)
+    LaunchedEffect(subscriptionId) {
+        viewModel.loadSubscription(subscriptionId)
     }
 
     val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
