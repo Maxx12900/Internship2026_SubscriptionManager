@@ -64,6 +64,7 @@
     <string name="descending">Descending</string>
     <string name="done">Done</string>
     <string name="reset">Reset</string>
+    <string name="no_description">No Description</string>
 
 
     <!-- Categories -->
@@ -90,10 +91,11 @@
     <string name="total_mo">Total/mo</string>
 
     <!-- Details Screen -->
-    <string name="price_label">PRICE</string>
-    <string name="next_renewal_label">NEXT RENEWAL</string>
+    <string name="price_label">Price</string>
+    <string name="next_renewal_label">Next renewal</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
+    <string name="added">Added</string>
 
     <!-- Billing Periods -->
     <string name="weekly">Weekly</string>
@@ -129,5 +131,11 @@
 
     <string name="per_year">/ year</string>
     <string name="per_month">/ mo</string>
+
+    <string name="log_in">Log in</string>
+    <string name="create_account">Create Account</string>
+    <string name="subscription_manager">Subscription\nManager</string>
+    <string name="password">Password</string>
+    <string name="eight_chars">At least 8 characters</string>
 
 </resources>

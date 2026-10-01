@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subscriptionmanager.R
 import com.example.subscriptionmanager.SubscriptionManagerApplication
+import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.util.CurrencyManager
@@ -47,8 +48,19 @@ fun SubscriptionDetailsScreen(
     val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
 
     subscription?.let { sub ->
-        val formattedDate = remember(sub.nextRenewalDate) {
+        val formattedRenewalDate = remember(sub.nextRenewalDate) {
             dateFormat.format(sub.nextRenewalDate.time)
+        }
+
+        val formattedStartDate = remember(sub.startDate) {
+            dateFormat.format(sub.startDate.time)
+        }
+
+        // Map the ordinal Int back to the Enum name
+        val billingPeriodText = remember(sub.billingPeriod) {
+            BillingPeriod.entries.getOrNull(sub.billingPeriod)?.name
+                ?.replace("_", " ")
+                ?: "Unknown"
         }
 
         Scaffold(
@@ -114,14 +126,92 @@ fun SubscriptionDetailsScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             InfoCard(
                                 label = stringResource(R.string.price_label),
-                                value = "${CurrencyManager.formatPrice(sub.price, currentCurrency)} / mo",
-                                modifier = Modifier.weight(1f)
+                                value = "$${sub.price} / mo",
+                                Modifier.weight(1f)
                             )
                             InfoCard(
                                 label = stringResource(R.string.next_renewal_label),
-                                value = formattedDate,
-                                modifier = Modifier.weight(1f)
+                                value = formattedRenewalDate,
+                                Modifier.weight(1f)
                             )
+                        }
+                    }
+                }
+
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            InfoCard(
+                                label = stringResource(R.string.billing_period),
+                                value = billingPeriodText,
+                                Modifier.weight(1f)
+                            )
+                            InfoCard(
+                                label = stringResource(R.string.added),
+                                value = formattedStartDate,
+                                Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                /* Undecided with which design should be used
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = "    DESCRIPTION",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shadowElevation = 0.dp // Keeping it flat to match InfoCards
+                        ) {
+                            Text(
+                                text = sub.description ?: "No description provided",
+                                modifier = Modifier.padding(16.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                */
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    ) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, color = MaterialTheme.colorScheme.outlineVariant )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.description),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Text(
+                                    text = sub.description?.takeIf { it.isNotBlank() } ?: stringResource(R.string.no_description),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }

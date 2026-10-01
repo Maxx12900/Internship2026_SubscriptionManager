@@ -24,6 +24,8 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.example.subscriptionmanager.credentials.AuthViewModel
+import com.example.subscriptionmanager.credentials.LocalAccountRepository
 import com.example.subscriptionmanager.navigation.AppNavGraph
 import com.example.subscriptionmanager.notifications.ChannelIds
 import com.example.subscriptionmanager.notifications.createNotificationChannel
@@ -44,6 +46,8 @@ class MainActivity : ComponentActivity() {
         CurrencyManager.init(this)
         BudgetManager.init(this)
 
+        val accounts = LocalAccountRepository(this)
+
         setContent {
             val themeMode by ThemeManager.themeMode.collectAsState()
             val isDark = when (themeMode) {
@@ -54,7 +58,7 @@ class MainActivity : ComponentActivity() {
 
             SubscriptionManagerTheme(darkTheme = isDark) {
                 val rootNav = rememberNavController()
-                NavHost(rootNav, startDestination = "login") {
+                NavHost(rootNav, startDestination = if (accounts.isRegistered()) "login" else "signup") {
                     composable("login") {
                         LoginScreen(
                             onLoggedIn = {

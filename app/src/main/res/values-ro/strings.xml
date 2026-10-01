@@ -86,10 +86,12 @@
     <string name="total_mo">Total/lună</string>
 
     <!-- Details Screen -->
-    <string name="price_label">PREȚ</string>
-    <string name="next_renewal_label">URMĂTOAREA REÎNNOIRE</string>
+    <string name="price_label">Preţ</string>
+    <string name="next_renewal_label">Următoarea reînnoire</string>
     <string name="delete">Șterge</string>
     <string name="edit">Editează</string>
+    <string name="added">Adăugat</string>
+    <string name="no_description">Fără descriere</string>
 
     <!-- Billing Periods -->
     <string name="weekly">Săptămânal</string>
@@ -126,5 +128,12 @@
 
     <string name="per_year">/ an</string>
     <string name="per_month">/ lună</string>
+
+
+    <string name="log_in">Autentificare</string>
+    <string name="create_account">Creează cont</string>
+    <string name="subscription_manager">Manager\nAbonamente</string>
+    <string name="password">Parolă</string>
+    <string name="eight_chars">Cel puțin 8 caractere</string>
 
 </resources>
