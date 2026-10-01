@@ -20,7 +20,7 @@ class SubscriptionRepository(
     private val notificationDao: NotificationDao
 ) {
     //Subscription operations
-    fun allSubscriptions(): Flow<List<SubscriptionEntity>> =
+    fun getAllSubscriptions(): Flow<List<SubscriptionEntity>> =
         subscriptionDao.getAllSubscriptions()
 
     fun getSubscriptionById(id: Int): SubscriptionEntity? =
@@ -42,7 +42,7 @@ class SubscriptionRepository(
         subscriptionDao.deleteSubscription(subscription)
 
     // Category operations
-    fun allCategories(): Flow<List<CategoryEntity>> =
+    fun getAllCategories(): Flow<List<CategoryEntity>> =
         categoryDao.getAllCategories()
 
     suspend fun getCategoryForSubscription(subscriptionId: Int): CategoryEntity? =

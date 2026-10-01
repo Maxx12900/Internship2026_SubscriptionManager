@@ -4,6 +4,7 @@ import com.example.subscriptionmanager.data.entities.SubscriptionEntity
 import com.example.subscriptionmanager.data.model.Subscription
 
 fun SubscriptionEntity.toSubscription(): Subscription = Subscription(
+    id = id,
     name = name,
     packageName = packageName,
     price = price,
