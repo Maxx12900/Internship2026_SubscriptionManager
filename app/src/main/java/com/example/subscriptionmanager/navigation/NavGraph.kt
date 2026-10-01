@@ -56,7 +56,6 @@ fun AppNavGraph() {
     )
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (currentRoute in topLevelRoutes) {
                 AppBottomNavigationBar(navController = navController)
@@ -66,7 +65,10 @@ fun AppNavGraph() {
         NavHost(
             navController = navController,
             startDestination = Screen.SubscriptionList.route,
-            modifier = Modifier.fillMaxSize().padding(innerPadding)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = innerPadding.calculateTopPadding())
+                .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             // Home Screen
             composable(Screen.Home.route) {}
