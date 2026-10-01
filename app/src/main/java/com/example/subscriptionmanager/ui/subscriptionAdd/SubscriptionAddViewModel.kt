@@ -23,6 +23,7 @@ data class SubscriptionFormState(
     val packageName: String? = null,
     val price: String = "",
     val billingPeriod: BillingPeriod = BillingPeriod.MONTHLY,
+    val startDate: Calendar = Calendar.getInstance(),
     val daysBeforeToRemind: Int? = 3,
     val description: String = "",
     val status: Boolean = true,
@@ -71,6 +72,7 @@ class SubscriptionAddViewModel(
                     packageName = entity.packageName,
                     price = entity.price.toString(),
                     billingPeriod = periodEnum,
+                    startDate = entity.startDate,
                     daysBeforeToRemind = notif?.daysBeforeToRemind ?: 3,
                     description = entity.description ?: "",
                     status = entity.status
@@ -99,6 +101,10 @@ class SubscriptionAddViewModel(
         _formState.value = _formState.value.copy(billingPeriod = value)
     }
 
+    fun updateStartDate(value: Calendar) {
+        _formState.value = _formState.value.copy(startDate = value)
+    }
+
     fun updateDaysBeforeToRemind(value: Int?) {
         _formState.value = _formState.value.copy(daysBeforeToRemind = value)
     }
@@ -111,6 +117,25 @@ class SubscriptionAddViewModel(
         _formState.value = _formState.value.copy(status = value)
     }
 
+    private fun calculateNextRenewalDate(startDate: Calendar, billingPeriod: BillingPeriod): Calendar {
+        val renewal = startDate.clone() as Calendar
+        val today = Calendar.getInstance()
+        addPeriod(renewal, billingPeriod)
+        while (renewal.before(today)) {
+            addPeriod(renewal, billingPeriod)
+        }
+
+        return renewal
+    }
+    private fun addPeriod(cal: Calendar, billingPeriod: BillingPeriod) {
+        when (billingPeriod) {
+            BillingPeriod.WEEKLY -> cal.add(Calendar.WEEK_OF_YEAR, 1)
+            BillingPeriod.MONTHLY -> cal.add(Calendar.MONTH, 1)
+            BillingPeriod.THREE_MONTHS -> cal.add(Calendar.MONTH, 3)
+            BillingPeriod.SIX_MONTHS -> cal.add(Calendar.MONTH, 6)
+            BillingPeriod.YEARLY -> cal.add(Calendar.YEAR, 1)
+        }
+    }
     fun save(onSuccess: () -> Unit) {
         val state = _formState.value
         val trimmedName = state.name.trim()
@@ -128,6 +153,7 @@ class SubscriptionAddViewModel(
                         val original = originalEntity
                         val existingId = state.id
                         val daysBefore = state.daysBeforeToRemind ?: 3
+                        val calculatedRenewal = calculateNextRenewalDate(state.startDate, state.billingPeriod)
 
                         if (existingId > 0) {
                             // Edit Mode: Update existing record
@@ -137,10 +163,9 @@ class SubscriptionAddViewModel(
                                 packageName = state.packageName ?: original?.packageName,
                                 price = parsedPrice,
                                 billingPeriod = state.billingPeriod.ordinal,
-                                nextRenewalDate = original?.nextRenewalDate
-                                    ?: Calendar.getInstance().apply { add(Calendar.MONTH, 1) },
+                                nextRenewalDate = calculatedRenewal,
                                 status = state.status,
-                                startDate = original?.startDate ?: Calendar.getInstance(),
+                                startDate = state.startDate,
                                 score = original?.score ?: 0,
                                 description = state.description
                             )
@@ -168,8 +193,7 @@ class SubscriptionAddViewModel(
                                     existingNotif.copy(daysBeforeToRemind = daysBefore)
                                 )
                             } else {
-                                val reminderCal = (original?.nextRenewalDate?.clone() as? Calendar
-                                    ?: Calendar.getInstance()).apply {
+                                val reminderCal = (calculatedRenewal.clone() as Calendar).apply {
                                     add(Calendar.DAY_OF_MONTH, -daysBefore)
                                 }
                                 repository.insertNotification(
@@ -190,10 +214,9 @@ class SubscriptionAddViewModel(
                                 packageName = state.packageName,
                                 price = parsedPrice,
                                 billingPeriod = state.billingPeriod.ordinal,
-                                nextRenewalDate = Calendar.getInstance()
-                                    .apply { add(Calendar.MONTH, 1) },
+                                nextRenewalDate = calculatedRenewal,
                                 status = state.status,
-                                startDate = Calendar.getInstance(),
+                                startDate = state.startDate,
                                 score = 0,
                                 description = state.description
                             )
@@ -207,8 +230,7 @@ class SubscriptionAddViewModel(
                                 )
                             )
 
-                            val reminderCal = Calendar.getInstance().apply {
-                                add(Calendar.MONTH, 1)
+                            val reminderCal = (calculatedRenewal.clone() as Calendar).apply {
                                 add(Calendar.DAY_OF_MONTH, -daysBefore)
                             }
                             repository.insertNotification(

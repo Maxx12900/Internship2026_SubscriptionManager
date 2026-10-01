@@ -25,7 +25,10 @@ import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.ui.common.fieldHeight
 import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.util.getInstalledApps
-
+import android.app.DatePickerDialog
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 @Composable
 fun SubscriptionAddScreen(
     subscriptionId: Int? = null, // null = Add Mode, non-null = Edit Mode
@@ -246,7 +249,51 @@ fun SubscriptionAddScreen(
                 onSelect = { viewModel.updateBillingPeriod(it) }
             )
 
-            // 6. Days before to remind
+            // Start Date Field Label and Variables
+            FieldLabel(label = "Start date", isRequired = true)
+            var showDatePicker by remember { mutableStateOf(false) }
+            val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
+            val startDateString = remember(formState.startDate) {
+                dateFormat.format(formState.startDate.time)
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(fieldHeight)
+                    .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
+                    .clickable { showDatePicker = true }
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.CenterStart //Vertically
+            ) {
+                Text(
+                    text = startDateString,
+                    fontSize = 14.sp,
+                    color = Color.Black
+                )
+            }
+            if (showDatePicker) {
+                val cal = formState.startDate
+                DatePickerDialog(
+                    context,
+                    { _, year, month, dayOfMonth ->
+                        val selectedCalendar = Calendar.getInstance().apply {
+                            set(Calendar.YEAR, year)
+                            set(Calendar.MONTH, month)
+                            set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                        }
+                        viewModel.updateStartDate(selectedCalendar)
+                        showDatePicker = false
+                    },
+                    cal.get(Calendar.YEAR),
+                    cal.get(Calendar.MONTH),
+                    cal.get(Calendar.DAY_OF_MONTH)
+                ).apply {
+                    setOnDismissListener { showDatePicker = false }
+                }.show()
+            }
+
+            // Days before to remind
             FieldLabel(label = "Days before to remind", isRequired = false)
             CustomTextField(
                 value = formState.daysBeforeToRemind?.toString() ?: "",
@@ -254,7 +301,7 @@ fun SubscriptionAddScreen(
                 placeholder = "3"
             )
 
-            // 7. Description
+            // Description
             FieldLabel(label = "Description", isRequired = false)
             CustomTextField(
                 value = formState.description,
@@ -262,7 +309,7 @@ fun SubscriptionAddScreen(
                 placeholder = "Optional description"
             )
 
-            // 8. Active/Inactive Status Switch (In edit mode)
+            // Active/Inactive Status Switch (In edit mode)
             if (isEditMode) {
                 FieldLabel(label = "Active/Inactive", isRequired = false)
                 Row(
