@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +40,7 @@ import com.example.subscriptionmanager.data.entities.Category
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.ui.common.padding
+import kotlin.math.roundToInt
 
 @Composable
 fun HomeScreen(
@@ -148,11 +150,13 @@ private fun CategoryBreakdown(categorySpends: List<CategorySpend>) {
 
 @Composable
 private fun CategoryRow(spend: CategorySpend) {
+    val percentage = (spend.fractionOfTotal * 100).roundToInt()
+
     Column {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(spend.category.displayName(), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text("${spend.category.displayName()} - $percentage %", fontWeight = FontWeight.Bold, fontSize = 14.sp)
             Text("$${"%.2f".format(spend.monthlyAmount)}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-        }
+                    }
         Spacer(Modifier.size(6.dp))
         Box(
             modifier = Modifier
@@ -162,7 +166,8 @@ private fun CategoryRow(spend: CategorySpend) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(spend.fractionOfTop.coerceIn(0f, 1f))
+                    .fillMaxWidth(spend.fractionOfTotal.coerceIn(0f, 1f))
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
             )
         }
     }
