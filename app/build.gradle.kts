@@ -50,11 +50,16 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.navigation.runtime.ktx)
+
     // Room
     implementation(libs.androidx.room3.common)
     implementation(libs.androidx.room3.runtime)
     implementation(libs.androidx.work.runtime.ktx)
     ksp(libs.androidx.room3.compiler)
+
+    // Credentials
+    implementation(libs.androidx.credentials)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
