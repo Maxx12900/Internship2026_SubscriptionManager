@@ -21,8 +21,8 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -104,8 +104,7 @@ fun HomeScreen(
 @Composable
 private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCount: Int) {
     Card(
-        shape = RoundedCornerShape(padding),
-        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color(0xFFE9E8FC))
+        shape = RoundedCornerShape(padding)
     ) {
         Column(modifier = Modifier.padding(padding)) {
             Text(
@@ -156,7 +155,7 @@ private fun CategoryRow(spend: CategorySpend) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("${spend.category.displayName()} - $percentage %", fontWeight = FontWeight.Bold, fontSize = 14.sp)
             Text("$${"%.2f".format(spend.monthlyAmount)}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    }
+        }
         Spacer(Modifier.size(6.dp))
         Box(
             modifier = Modifier
@@ -167,7 +166,7 @@ private fun CategoryRow(spend: CategorySpend) {
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(spend.fractionOfTotal.coerceIn(0f, 1f))
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                    .background(colorScheme.primary, RoundedCornerShape(50))
             )
         }
     }
@@ -179,8 +178,10 @@ private fun Category.displayName(): String =
 
 @Composable
 private fun StatusPill(isActive: Boolean) {
-    val bg = if (isActive) Color(0xFFD8F5DC) else Color(0xFFF2F2F7)
-    val fg = if (isActive) Color(0xFF1F7A34) else Color(0xFF8E8E93)
+    // CHANGED: Use Theme colors instead of hardcoded hexes for inactive
+    val bg = if (isActive) Color(0xFFD0F0D0) else colorScheme.error
+    val fg = if (isActive) Color(0xFF4CAF50) else colorScheme.onError
+
     Box(
         modifier = Modifier
             .background(bg, RoundedCornerShape(50))
