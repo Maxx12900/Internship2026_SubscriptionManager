@@ -102,15 +102,6 @@ fun SubscriptionAddScreen(
                 )
             }
 
-            formState.error?.let { err ->
-                Text(
-                    text = err,
-                    color = MaterialTheme.colorScheme.error, //there is a system error color
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
             // App Field with Dropdown Arrow
             FieldLabel(label = "App", isRequired = false)
 
