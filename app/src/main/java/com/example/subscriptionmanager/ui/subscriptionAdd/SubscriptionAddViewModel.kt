@@ -25,6 +25,7 @@ data class SubscriptionFormState(
     val billingPeriod: BillingPeriod = BillingPeriod.MONTHLY,
     val startDate: Calendar = Calendar.getInstance(),
     val daysBeforeToRemind: Int? = 3,
+    val shouldRemind: Boolean = true,
     val description: String = "",
     val status: Boolean = true,
     val error: String? = null
@@ -74,6 +75,7 @@ class SubscriptionAddViewModel(
                     billingPeriod = periodEnum,
                     startDate = entity.startDate,
                     daysBeforeToRemind = notif?.daysBeforeToRemind ?: 3,
+                    shouldRemind = notif?.shouldRemind ?: true,
                     description = entity.description ?: "",
                     status = entity.status
                 )
@@ -107,6 +109,10 @@ class SubscriptionAddViewModel(
 
     fun updateDaysBeforeToRemind(value: Int?) {
         _formState.value = _formState.value.copy(daysBeforeToRemind = value)
+    }
+
+    fun updateShouldRemind(value: Boolean) {
+        _formState.value = _formState.value.copy(shouldRemind = value)
     }
 
     fun updateDescription(value: String) {
@@ -153,6 +159,7 @@ class SubscriptionAddViewModel(
                         val original = originalEntity
                         val existingId = state.id
                         val daysBefore = state.daysBeforeToRemind ?: 3
+                        val shouldRemind = state.shouldRemind
                         val calculatedRenewal = calculateNextRenewalDate(state.startDate, state.billingPeriod)
 
                         if (existingId > 0) {
@@ -199,7 +206,7 @@ class SubscriptionAddViewModel(
                                 repository.insertNotification(
                                     NotificationEntity(
                                         subscriptionId = existingId,
-                                        shouldRemind = true,
+                                        shouldRemind = shouldRemind,
                                         reminderDate = reminderCal,
                                         daysBeforeToRemind = daysBefore,
                                         showPriceChanges = true
@@ -236,7 +243,7 @@ class SubscriptionAddViewModel(
                             repository.insertNotification(
                                 NotificationEntity(
                                     subscriptionId = newSubscriptionId,
-                                    shouldRemind = true,
+                                    shouldRemind = shouldRemind,
                                     reminderDate = reminderCal,
                                     daysBeforeToRemind = daysBefore,
                                     showPriceChanges = true

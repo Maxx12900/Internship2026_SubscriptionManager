@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -29,6 +28,8 @@ import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.util.getInstalledApps
 import android.app.DatePickerDialog
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.text.input.KeyboardType
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -325,17 +326,39 @@ fun SubscriptionAddScreen(
                 }.show()
             }
 
-            // Days before to remind
-            FieldLabel(label = "Days before to remind", isRequired = false)
-            CustomTextField(
-                value = formState.daysBeforeToRemind?.toString() ?: "",
-                onValueChange = { input ->
-                    val filtered = input.filter { it.isDigit() }
-                    viewModel.updateDaysBeforeToRemind(filtered.toIntOrNull())
-                },
-                placeholder = "3",
-                keyboardType = KeyboardType.Number
-            )
+            Row {// Should remind
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    FieldLabel(label = "Remind me", isRequired = false)
+                    Switch(
+                        checked = formState.shouldRemind,
+                        onCheckedChange = { state ->
+                            viewModel.updateShouldRemind(state)
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.padding(12.dp))
+
+                // Days before to remind
+                Column(
+                    modifier = Modifier.weight(0.8f)
+                ) {
+                    FieldLabel(label = "Days before to remind", isRequired = false)
+                    CustomTextField(
+                        value = formState.daysBeforeToRemind?.toString() ?: "",
+                        onValueChange = { input ->
+                            val filtered = input.filter { it.isDigit() }
+                            viewModel.updateDaysBeforeToRemind(filtered.toIntOrNull())
+                        },
+                        placeholder = "3",
+                        keyboardType = KeyboardType.Number,
+                        enabled = formState.shouldRemind
+                    )
+                }
+            }
+
 
             // Description
             FieldLabel(label = "Description", isRequired = false)
@@ -410,7 +433,8 @@ private fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    enabled: Boolean = true
 ) {
     TextField(
         value = value,
@@ -427,7 +451,8 @@ private fun CustomTextField(
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .height(fieldHeight)
+            .height(fieldHeight),
+        enabled = enabled
     )
 }
 
