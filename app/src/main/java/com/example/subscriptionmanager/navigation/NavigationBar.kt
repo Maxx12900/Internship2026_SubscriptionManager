@@ -18,12 +18,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.material3.MaterialTheme
 
 sealed class BottomNavItem(
     val route: String,
@@ -53,12 +53,11 @@ fun AppBottomNavigationBar(
 
     Surface(
         modifier = modifier.fillMaxWidth().navigationBarsPadding(),
-        color = Color(0xFFF2F2F7),
         shadowElevation = 0.dp,
         tonalElevation = 0.dp
     ) {
         NavigationBar(
-            containerColor = Color(0xFFF2F2F7),
+            containerColor = MaterialTheme.colorScheme.surface,
             tonalElevation = 0.dp,
             windowInsets = WindowInsets(0, 0, 0, 0),
             modifier = Modifier.height(86.dp)
@@ -92,11 +91,12 @@ fun AppBottomNavigationBar(
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFF5E5CE6),
-                        selectedTextColor = Color(0xFF5E5CE6),
-                        unselectedIconColor = Color(0xFF8E8E93),
-                        unselectedTextColor = Color(0xFF8E8E93),
-                        indicatorColor = Color.Transparent
+                        // Use Primary for selected state, OnSurfaceVariant for unselected
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
                     )
                 )
             }

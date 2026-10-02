@@ -47,7 +47,7 @@ fun SubscriptionDetailsScreen(
         }
 
         Scaffold(
-            containerColor = Color(0xFFFBFBFF),
+            containerColor = MaterialTheme.colorScheme.surface,
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
             LazyColumn(
@@ -79,7 +79,7 @@ fun SubscriptionDetailsScreen(
                         Surface(
                             shape = RoundedCornerShape(24.dp),
                             shadowElevation = 2.dp,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
                             AppIcon(
                                 packageName = sub.packageName,
@@ -91,7 +91,7 @@ fun SubscriptionDetailsScreen(
                         Column {
                             Text(
                                 text = if (sub.status) "Active" else "Inactive",
-                                color = if (sub.status) Color(0xFF4CAF50) else Color.Red,
+                                color = if (sub.status) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMedium
                             )
@@ -102,8 +102,16 @@ fun SubscriptionDetailsScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            InfoCard("PRICE", "$${sub.price} / mo", Modifier.weight(1f))
-                            InfoCard("NEXT RENEWAL", formattedDate, Modifier.weight(1f))
+                            InfoCard(
+                                "PRICE",
+                                "$${sub.price} / mo",
+                                Modifier.weight(1f)
+                            )
+                            InfoCard(
+                                "NEXT RENEWAL",
+                                formattedDate,
+                                Modifier.weight(1f)
+                            )
                         }
                     }
                 }
@@ -126,9 +134,12 @@ fun SubscriptionDetailsScreen(
                             },
                             modifier = Modifier.weight(1f).height(50.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            )
                         ) {
-                            Text("Delete", color = Color.White)
+                            Text("Delete")
                         }
                     }
                 }
@@ -142,13 +153,21 @@ private fun InfoCard(label: String, value: String, modifier: Modifier = Modifier
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), // Theme-aware
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(4.dp))
-            Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(
+                value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -28,8 +29,6 @@ import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.util.getInstalledApps
 import android.app.DatePickerDialog
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.text.input.KeyboardType
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -75,7 +74,7 @@ fun SubscriptionAddScreen(
     val buttonText = if (isEditMode) "Save Changes" else "Save Subscription"
 
     Scaffold(
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -98,8 +97,17 @@ fun SubscriptionAddScreen(
                 Text(
                     text = "Cancel",
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.clickable { onCancel() }
+                )
+            }
+
+            formState.error?.let { err ->
+                Text(
+                    text = err,
+                    color = MaterialTheme.colorScheme.error, //there is a system error color
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
 
@@ -145,8 +153,8 @@ fun SubscriptionAddScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF7F7F8),
-                        unfocusedContainerColor = Color(0xFFF7F7F8),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -366,7 +374,7 @@ fun SubscriptionAddScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(fieldHeight)
-                        .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -374,14 +382,14 @@ fun SubscriptionAddScreen(
                     Text(
                         text = if (formState.status) "Active" else "Inactive",
                         fontSize = 14.sp,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Switch(
                         checked = formState.status,
                         onCheckedChange = { viewModel.updateStatus(it) },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF635BFF)
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
@@ -402,11 +410,14 @@ fun SubscriptionAddScreen(
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF635BFF))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text(
                     text = buttonText,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp
                 )
@@ -422,7 +433,7 @@ private fun FieldLabel(label: String, isRequired: Boolean) {
     Row {
         Text(text = label, style = MaterialTheme.typography.bodySmall)
         if (isRequired) {
-            Text(text = "*", style = MaterialTheme.typography.bodySmall, color = Color(0xFFEE6C6D))
+            Text(text = "*", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         }
     }
 }
@@ -443,8 +454,8 @@ private fun CustomTextField(
         shape = RoundedCornerShape(12.dp),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF7F7F8),
-            unfocusedContainerColor = Color(0xFFF7F7F8),
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),
@@ -472,7 +483,7 @@ private fun <T> CustomDropdownField(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(fieldHeight)
-                .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                 .clickable { expanded = !expanded }
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -481,14 +492,14 @@ private fun <T> CustomDropdownField(
             Text(
                 text = displayLabel ?: placeholder,
                 fontSize = 14.sp,
-                color = if (displayLabel == null) Color.LightGray else Color.Black
+                color = if (displayLabel == null)  MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (selected != null && toIcon != null) {
                     toIcon(selected)
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                Text(text = "▾", fontSize = 12.sp, color = Color.Gray)
+                Text(text = "▾", fontSize = 12.sp, color =  MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
