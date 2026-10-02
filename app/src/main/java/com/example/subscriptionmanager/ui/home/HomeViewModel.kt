@@ -19,7 +19,7 @@ enum class HomeTab { RECENT_PURCHASES, UPCOMING_PAYMENTS }
 data class CategorySpend(
     val category: Category,
     val monthlyAmount: Double,
-    val fractionOfTop: Float
+    val fractionOfTotal: Float
 )
 
 data class HomeSubscriptionRow(
@@ -79,14 +79,14 @@ class HomeViewModel(
             .groupBy { categoryBySubscriptionId[it.id] ?: Category.NONE }
             .mapValues { (_, subs) -> subs.sumOf { monthlyEquivalent(it.price, it.billingPeriod) } }
 
-        val topAmount = spendByCategory.values.maxOrNull() ?: 0.0
+        val totalSpend = spendByCategory.values.sum()
         val categorySpends = spendByCategory
             .filter { it.value > 0.0 }
             .map { (category, amount) ->
                 CategorySpend(
                     category = category,
                     monthlyAmount = amount,
-                    fractionOfTop = if (topAmount > 0) (amount / topAmount).toFloat() else 0f
+                    fractionOfTotal = if (totalSpend > 0) (amount / totalSpend).toFloat() else 0f
                 )
             }
             .sortedByDescending { it.monthlyAmount }
