@@ -102,15 +102,6 @@ fun SubscriptionAddScreen(
                 )
             }
 
-            formState.error?.let { err ->
-                Text(
-                    text = err,
-                    color = Color.Red,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
             // App Field with Dropdown Arrow
             FieldLabel(label = "App", isRequired = false)
 
@@ -374,6 +365,15 @@ fun SubscriptionAddScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            formState.error?.let { err ->
+                Text(
+                    text = err,
+                    color = Color(0xFFEE6C6D),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
             Button(
                 onClick = { viewModel.save(onSuccess = onSave) },
                 modifier = Modifier
