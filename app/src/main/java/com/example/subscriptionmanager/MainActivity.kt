@@ -7,28 +7,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import com.example.subscriptionmanager.data.analysis.analyzeSubscription
-import com.example.subscriptionmanager.data.analysis.debugPrintPackageNames
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.subscriptionmanager.credentials.LoginScreen
+import com.example.subscriptionmanager.credentials.SignUpScreen
 import com.example.subscriptionmanager.navigation.AppNavGraph
 import com.example.subscriptionmanager.notifications.ChannelIds
-import com.example.subscriptionmanager.notifications.createNotification
 import com.example.subscriptionmanager.notifications.createNotificationChannel
-import com.example.subscriptionmanager.notifications.scheduleReminder
-import com.example.subscriptionmanager.notifications.sendNotification
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
-import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -36,12 +26,28 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SubscriptionManagerTheme {
-                AppNavGraph()
+                val nav = rememberNavController()
+                NavHost(nav, startDestination = "login") {
+                    composable("login") {
+                        LoginScreen(
+                            onLoggedIn = { nav.navigate("home") { popUpTo("login") { inclusive = true } } },
+                            onCreateAccount = { nav.navigate("signup") },
+                        )
+                    }
+                    composable("signup") {
+                        SignUpScreen(
+                            onAccountCreated = { nav.navigate("home") { popUpTo("login") { inclusive = true } } },
+                            onLogIn = { nav.popBackStack() },
+                        )
+                    }
+                    composable("home") { AppNavGraph() }
+                }
             }
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun createNotificationChannels(context: Context) {
     createNotificationChannel(
         context,
