@@ -42,13 +42,13 @@ class SubscriptionManagerApplication : Application() {
     }
 
     val seeds = listOf(
-        Seed("Netflix", "com.netflix.mediaclient", 15.99, 3, dateOf(2026, 10, 21), true, dateOf(2024, 10, 21), 8, Category.STREAMING.value, true, dateOf(2026, 10, 18), 3, true, null),
-        Seed("Spotify", "com.spotify.music", 10.99, 8, dateOf(2026, 10, 15), true, dateOf(2024, 10, 15), 9, Category.STREAMING.value, true, dateOf(2026, 10, 12), 3, true, null),
-        Seed("Microsoft 365", "com.microsoft.office.officehub", 99.99, 8, dateOf(2027, 9, 21), true, dateOf(2024, 9, 21), 7, Category.PRODUCTIVITY.value, true, dateOf(2027, 9, 18), 3, true, null),
-        Seed("Adobe Creative Cloud", "com.adobe.creativecloud", 54.99, 6, dateOf(2026, 10, 10), true, dateOf(2024, 10, 10), 6, Category.PRODUCTIVITY.value, false, dateOf(2026, 10, 7), 3, false, null),
-        Seed("Disney+", "com.disney.disneyplus", 7.99, 7, dateOf(2026, 10, 25), true, dateOf(2024, 10, 25), 8, Category.STREAMING.value, true, dateOf(2026, 10, 22), 3, true, null),
-        Seed("YouTube Premium", "com.google.android.youtube", 13.99, 6, dateOf(2026, 10, 5), true, dateOf(2024, 10, 5), 9, Category.STREAMING.value, true, dateOf(2026, 10, 2), 3, true, dateOf(2024, 11, 5)),
-        Seed("Dropbox", "com.dropbox.android", 11.99, 7, dateOf(2026, 10, 18), false, dateOf(2024, 10, 18), 7, Category.PRODUCTIVITY.value, true, dateOf(2026, 10, 15), 3, true, null),
+        Seed("Netflix", "com.netflix.mediaclient", 15.99, 0, dateOf(2026, 10, 21), true, dateOf(2024, 10, 21), 8, Category.STREAMING.value, true, dateOf(2026, 10, 18), 3, true, null),
+        Seed("Spotify", "com.spotify.music", 10.99, 2, dateOf(2026, 10, 15), true, dateOf(2024, 10, 15), 9, Category.STREAMING.value, true, dateOf(2026, 10, 12), 3, true, null),
+        Seed("Microsoft 365", "com.microsoft.office.officehub", 99.99, 1, dateOf(2027, 9, 21), true, dateOf(2024, 9, 21), 7, Category.PRODUCTIVITY.value, true, dateOf(2027, 9, 18), 3, true, null),
+        Seed("Adobe Creative Cloud", "com.adobe.creativecloud", 54.99, 3, dateOf(2026, 10, 10), true, dateOf(2024, 10, 10), 6, Category.PRODUCTIVITY.value, false, dateOf(2026, 10, 7), 3, false, null),
+        Seed("Disney+", "com.disney.disneyplus", 7.99, 0, dateOf(2026, 10, 25), true, dateOf(2024, 10, 25), 8, Category.STREAMING.value, true, dateOf(2026, 10, 22), 3, true, null),
+        Seed("YouTube Premium", "com.google.android.youtube", 13.99, 2, dateOf(2026, 10, 5), true, dateOf(2024, 10, 5), 9, Category.STREAMING.value, true, dateOf(2026, 10, 2), 3, true, dateOf(2024, 11, 5)),
+        Seed("Dropbox", "com.dropbox.android", 11.99, 3, dateOf(2026, 10, 18), false, dateOf(2024, 10, 18), 7, Category.PRODUCTIVITY.value, true, dateOf(2026, 10, 15), 3, true, null),
         Seed("Audible", "com.audible.application", 14.95, 1, dateOf(2026, 10, 12), true, dateOf(2024, 10, 12), 8, Category.STREAMING.value, true, dateOf(2026, 10, 9), 3, false, null),
     )
 
