@@ -26,6 +26,8 @@ import com.example.subscriptionmanager.ui.common.fieldHeight
 import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.util.getInstalledApps
 import android.app.DatePickerDialog
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -235,8 +237,14 @@ fun SubscriptionAddScreen(
             FieldLabel(label = "Price", isRequired = true)
             CustomTextField(
                 value = formState.price,
-                onValueChange = { viewModel.updatePrice(it) },
-                placeholder = "9.99"
+                onValueChange = { input ->
+                    val filtered = input.filterIndexed { index, char ->
+                        char.isDigit() || (char == '.' && input.indexOf('.') == index)
+                    }
+                    viewModel.updatePrice(filtered)
+                },
+                placeholder = "9.99",
+                keyboardType = KeyboardType.Decimal
             )
 
             // Billing period
@@ -297,8 +305,12 @@ fun SubscriptionAddScreen(
             FieldLabel(label = "Days before to remind", isRequired = false)
             CustomTextField(
                 value = formState.daysBeforeToRemind?.toString() ?: "",
-                onValueChange = { viewModel.updateDaysBeforeToRemind(it.toIntOrNull()) },
-                placeholder = "3"
+                onValueChange = { input ->
+                    val filtered = input.filter { it.isDigit() }
+                    viewModel.updateDaysBeforeToRemind(filtered.toIntOrNull())
+                },
+                placeholder = "3",
+                keyboardType = KeyboardType.Number
             )
 
             // Description
@@ -373,7 +385,8 @@ private fun FieldLabel(label: String, isRequired: Boolean) {
 private fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String
+    placeholder: String,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
     TextField(
         value = value,
@@ -381,6 +394,7 @@ private fun CustomTextField(
         singleLine = true,
         placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium, color = Color.LightGray) },
         shape = RoundedCornerShape(12.dp),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color(0xFFF7F7F8),
             unfocusedContainerColor = Color(0xFFF7F7F8),
