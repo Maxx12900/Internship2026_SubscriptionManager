@@ -34,10 +34,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         createNotificationChannels(this)
 
-        val tenSecondsIntoTheFuture = Calendar.getInstance()
-        tenSecondsIntoTheFuture.add(Calendar.SECOND, 10)
-        scheduleReminder(this, tenSecondsIntoTheFuture)
-
         setContent {
             SubscriptionManagerTheme {
                 AppNavGraph()
