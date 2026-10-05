@@ -1,6 +1,5 @@
 package com.example.subscriptionmanager.notifications
 
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,56 +8,56 @@ import androidx.annotation.RequiresApi
 import androidx.work.CoroutineWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.Worker
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.example.subscriptionmanager.SubscriptionManagerApplication
 import com.example.subscriptionmanager.data.analysis.AnalysisResponseType
 import com.example.subscriptionmanager.data.analysis.analyzeSubscription
-import com.example.subscriptionmanager.data.model.Subscription
+import com.example.subscriptionmanager.data.entities.SubscriptionEntity
 import com.example.subscriptionmanager.data.repository.SubscriptionRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
 
 class ReminderReceiver : BroadcastReceiver() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onReceive(context: Context, intent: Intent) {
-        println("WHERE NOTIFICATION???")
+        val subscriptionId: Int = intent.getIntExtra("EXTRA_SUBSCRIPTION_ID", -1)
+        if (subscriptionId == -1) return // no point in going forward, I mean, we don't even know what subscription to analyze
+
         WorkManager.getInstance(context).enqueue(
-            OneTimeWorkRequestBuilder<RenewalNotificationWorker>().build()
+            OneTimeWorkRequestBuilder<RenewalNotificationWorker>()
+                .setInputData(
+                    workDataOf("KEY_SUBSCRIPTION_ID" to subscriptionId)
+                )
+                .build()
         )
     }
 }
 
 class RenewalNotificationWorker(
-    private val context: Context, workerParams: WorkerParameters
+    private val context: Context,
+    workerParams: WorkerParameters
 ): CoroutineWorker(context, workerParams) {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override suspend fun doWork(): Result {
-        // TODO: currently this function analyses every subscription per every renewal date set
-        // probably should make it so that only the subscription with the current renewal date reminer
-        // set is analyzed
+        val subscriptionId = inputData.getInt("KEY_SUBSCRIPTION_ID", -1)
+        if (subscriptionId == -1) return Result.failure()
 
         val repository: SubscriptionRepository = (context.applicationContext as SubscriptionManagerApplication).repository
 
-        var unusedSubscriptions = 0
+        val subscription: SubscriptionEntity =
+            repository.getSubscriptionById(subscriptionId) ?: return Result.failure()
 
-        val subscriptions = repository.getSubscriptions().first()
-        for (subscription in subscriptions) {
-            val verdict = analyzeSubscription(context, subscription)
+        val verdict = analyzeSubscription(context, subscription)
 
-            when (verdict) {
-                AnalysisResponseType.NOT_USED -> unusedSubscriptions++
-                else -> {}
-            }
-        }
+        println("WHERE NOTIFICATION I'M ASKING")
 
+        val title = "Renewal Reminder"
+        val name = subscription.name
+        val content: String = if (verdict == AnalysisResponseType.NOT_USED) {
+            "You aren't using $name that often, maybe consider unsubscribing?"
+        } else {
+            "Renewal for $name soon"
 
-        val title = "Subscription Usage"
-        var content = "Renewal soon"
-        if (unusedSubscriptions > 0) {
-            content += ". $unusedSubscriptions unused subscriptions."
         }
 
         val notification = createNotification(

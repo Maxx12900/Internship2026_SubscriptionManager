@@ -6,6 +6,7 @@ import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Process
 import android.provider.Settings
 import androidx.core.net.toUri

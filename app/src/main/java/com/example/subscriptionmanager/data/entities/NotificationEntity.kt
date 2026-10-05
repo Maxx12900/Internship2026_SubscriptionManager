@@ -26,6 +26,8 @@ data class NotificationEntity(
     val subscriptionId: Int = 0,
     val shouldRemind: Boolean,
     val reminderDate: Calendar, // date of the next reminder
+    val scheduledReminder: Boolean,
+    val scheduledNotificationId: Int?,
     val daysBeforeToRemind: Int, // Works for every type of reminder
     val showPriceChanges: Boolean, // FIXME: we need to deal with this one :\
     val trialEndDate: Calendar? = null,
