@@ -17,41 +17,35 @@ import javax.crypto.spec.PBEKeySpec
 import kotlin.io.encoding.Base64
 import androidx.core.content.edit
 
-// In case we want to replace it with something else
-interface AccountRepository {
-    suspend fun register(username: String, password: String): Result<Unit>
-    suspend fun authenticate(username: String, password: String): Result<Unit>
-}
-
-class LocalAccountRepository(context: Context) : AccountRepository {
+class LocalAccountRepository(context: Context){
+    private val key = "user"
     private val prefs = context.applicationContext
         .getSharedPreferences("accounts", Context.MODE_PRIVATE)
 
-    override suspend fun register(username: String, password: String): Result<Unit> =
+    fun isRegistered(): Boolean {
+        return prefs.getBoolean("registered", false)
+    }
+
+    suspend fun register(password: String): Result<Unit> =
         withContext(Dispatchers.Default) {
-            val key = key(username)
-            if (prefs.contains(key)) {
-                return@withContext Result.failure(Exception("That username is already taken"))
-            }
             val salt = ByteArray(16).also { SecureRandom().nextBytes(it) }
             prefs.edit(commit = true) { putString(key, "${encode(salt)}:${encode(hash(password, salt))}") }
+            prefs.edit(commit = true) { putBoolean("registered", true) }
             Result.success(Unit)
         }
 
-    override suspend fun authenticate(username: String, password: String): Result<Unit> =
+    suspend fun authenticate(password: String): Result<Unit> =
         withContext(Dispatchers.Default) {
-            val stored = prefs.getString(key(username), null)
-                ?: return@withContext Result.failure(Exception("Incorrect username or password"))
+            val stored = prefs.getString(key, null)
+                ?: return@withContext Result.failure(Exception("Account does not exist"))
             val (saltB64, hashB64) = stored.split(":")
             val actual = hash(password, Base64.Default.decode(saltB64))
             if (MessageDigest.isEqual(actual, Base64.Default.decode(hashB64))) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception("Incorrect username or password"))
+                Result.failure(Exception("Incorrect password"))
             }
         }
-
-    private fun key(username: String) = "user_" + username.trim().lowercase()
 
     private fun hash(password: String, salt: ByteArray): ByteArray =
         SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
@@ -62,22 +56,20 @@ class LocalAccountRepository(context: Context) : AccountRepository {
 }
 
 class AuthViewModel(app: Application) : AndroidViewModel(app) {
-    private val accounts: AccountRepository = LocalAccountRepository(app)
-
-    var username by mutableStateOf("")
-        private set
+    private val accounts = LocalAccountRepository(app)
     var password by mutableStateOf("")
         private set
     var error by mutableStateOf<String?>(null)
         private set
     var loading by mutableStateOf(false)
         private set
-
-    fun onUsernameChange(value: String) { username = value; error = null }
     fun onPasswordChange(value: String) { password = value; error = null }
 
+    fun isRegistered(): Boolean {
+        return accounts.isRegistered()
+    }
+
     private fun validate(): String? = when {
-        username.isBlank() -> "Please enter a username"
         password.length < MIN_PASSWORD -> "Password must be at least $MIN_PASSWORD characters"
         else -> null
     }
@@ -87,18 +79,10 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             loading = true
             validate()?.let { error = it; loading = false; return@launch }
-            accounts.register(username.trim(), password)
-                .onSuccess {
-                    // SAVE USERNAME IMMEDIATELY ON SIGN UP!
-                    getApplication<Application>()
-                        .getSharedPreferences("active_user", Context.MODE_PRIVATE)
-                        .edit(commit = true) {
-                            putString("logged_in_username", username.trim())
-                        }
-                    onSuccess()
-                }
+            accounts.register(password)
                 .onFailure { error = it.message ?: "Could not create account"; loading = false; return@launch }
             loading = false
+            onSuccess()
         }
     }
 
@@ -106,17 +90,9 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             loading = true
             validate()?.let { error = it; loading = false; return@launch }
-            accounts.authenticate(username.trim(), password)
-                .onSuccess {
-                    // SAVE USERNAME IMMEDIATELY ON LOG IN!
-                    getApplication<Application>()
-                        .getSharedPreferences("active_user", Context.MODE_PRIVATE)
-                        .edit(commit = true) {
-                            putString("logged_in_username", username.trim())
-                        }
-                    onSuccess()
-                }
-                .onFailure { error = it.message ?: "Incorrect username or password" }
+            accounts.authenticate(password)
+                .onSuccess { onSuccess() }
+                .onFailure { error = it.message ?: "Incorrect password" }
             loading = false
         }
     }
