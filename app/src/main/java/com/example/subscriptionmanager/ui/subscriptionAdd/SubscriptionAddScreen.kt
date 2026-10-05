@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+
 @Composable
 fun SubscriptionAddScreen(
     subscriptionId: Int? = null, // null = Add Mode, non-null = Edit Mode
@@ -92,12 +93,14 @@ fun SubscriptionAddScreen(
                     text = screenTitle,
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "Cancel",
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    //color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable { onCancel() }
                 )
             }
@@ -155,6 +158,8 @@ fun SubscriptionAddScreen(
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -170,18 +175,19 @@ fun SubscriptionAddScreen(
                             if (!currentPkg.isNullOrBlank()) {
                                 AppIcon(
                                     packageName = currentPkg,
-                                    fallbackLetter = appSearchQuery.take(1),
+                                    fallbackLetter = appSearchQuery.take(1).ifBlank { "?" },
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                             }
-                            Text(text = "▾", fontSize = 14.sp, color = Color.Gray)
+                            Text(text = "▾", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(fieldHeight)
                 )
+
                 DropdownMenu(
                     expanded = appDropdownExpanded && filteredAppSuggestions.isNotEmpty(),
                     onDismissRequest = { appDropdownExpanded = false },
@@ -218,6 +224,14 @@ fun SubscriptionAddScreen(
                                         overflow = TextOverflow.Ellipsis,
                                         modifier = Modifier.weight(1f)
                                     )
+                                    if (packageName != null) {
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        AppIcon(
+                                            packageName = packageName,
+                                            fallbackLetter = appName.take(1).ifBlank { "?" },
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
                                 }
                             },
                             onClick = {
@@ -358,8 +372,7 @@ fun SubscriptionAddScreen(
                 }
             }
 
-
-            // Description
+            // 7. Description
             FieldLabel(label = "Description", isRequired = false)
             CustomTextField(
                 value = formState.description,
@@ -431,7 +444,12 @@ fun SubscriptionAddScreen(
 @Composable
 private fun FieldLabel(label: String, isRequired: Boolean) {
     Row {
-        Text(text = label, style = MaterialTheme.typography.bodySmall)
+        //Text(text = label, style = MaterialTheme.typography.bodySmall)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         if (isRequired) {
             Text(text = "*", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         }

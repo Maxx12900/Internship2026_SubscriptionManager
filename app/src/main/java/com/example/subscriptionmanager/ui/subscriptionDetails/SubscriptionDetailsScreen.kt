@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.subscriptionmanager.SubscriptionManagerApplication
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
+import com.example.subscriptionmanager.util.CurrencyManager
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -29,6 +30,7 @@ fun SubscriptionDetailsScreen(
 ) {
     val context = LocalContext.current
     val repository = (context.applicationContext as SubscriptionManagerApplication).repository
+    val currentCurrency by CurrencyManager.currency.collectAsState()
     val viewModel: SubscriptionDetailsViewModel = viewModel(
         factory = GenericViewModelFactory { SubscriptionDetailsViewModel(repository) }
     )
@@ -64,12 +66,17 @@ fun SubscriptionDetailsScreen(
                             onClick = onBack,
                             modifier = Modifier.offset(x = (-12).dp, y = 8.dp)
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
                         }
                         Text(
                             text = sub.name,
                             style = MaterialTheme.typography.headlineLarge,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -83,7 +90,7 @@ fun SubscriptionDetailsScreen(
                         ) {
                             AppIcon(
                                 packageName = sub.packageName,
-                                fallbackLetter = sub.name.take(1),
+                                fallbackLetter = sub.name.take(1).ifBlank { "?" },
                                 modifier = Modifier.size(80.dp).padding(12.dp)
                             )
                         }
@@ -104,7 +111,8 @@ fun SubscriptionDetailsScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             InfoCard(
                                 "PRICE",
-                                "$${sub.price} / mo",
+                                //"$${sub.price} / mo",
+                                value = "${CurrencyManager.formatPrice(sub.price, currentCurrency)} / mo",
                                 Modifier.weight(1f)
                             )
                             InfoCard(
@@ -122,9 +130,12 @@ fun SubscriptionDetailsScreen(
                         modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                     ) {
                         OutlinedButton(
-                            onClick = { onEdit(sub.id) }, // <--- Pass sub.id integer
+                            onClick = { onEdit(sub.id) },
                             modifier = Modifier.weight(1f).height(50.dp),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
                         ) {
                             Text("Edit")
                         }
