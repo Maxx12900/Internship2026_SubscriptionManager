@@ -1,5 +1,6 @@
 package com.example.subscriptionmanager.ui.subscriptionAdd
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,6 +31,9 @@ import com.example.subscriptionmanager.util.getInstalledApps
 import android.app.DatePickerDialog
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.subscriptionmanager.notifications.areNotificationsAllowed
+import com.example.subscriptionmanager.notifications.areNotificationsEnabled
+import com.example.subscriptionmanager.notifications.requestNotificationPermission
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -41,10 +45,7 @@ fun SubscriptionAddScreen(
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
-    val repository = (context.applicationContext as SubscriptionManagerApplication).repository
-    val viewModel: SubscriptionAddViewModel = viewModel(
-        factory = GenericViewModelFactory { SubscriptionAddViewModel(repository) }
-    )
+    val viewModel: SubscriptionAddViewModel = viewModel()
 
     val formState by viewModel.formState.collectAsState()
 
@@ -347,7 +348,14 @@ fun SubscriptionAddScreen(
                     Switch(
                         checked = formState.shouldRemind,
                         onCheckedChange = { state ->
-                            viewModel.updateShouldRemind(state)
+                            if (areNotificationsAllowed(context) && areNotificationsEnabled(context)) {
+                                viewModel.updateShouldRemind(state)
+                            }
+                            if (!areNotificationsAllowed(context)) {
+                                if (context is Activity) {
+                                    requestNotificationPermission(context)
+                                }
+                            }
                         }
                     )
                 }

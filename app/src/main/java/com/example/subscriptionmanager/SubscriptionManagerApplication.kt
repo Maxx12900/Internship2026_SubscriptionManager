@@ -92,7 +92,9 @@ class SubscriptionManagerApplication : Application() {
                     reminderDate = seed.reminderDate,
                     daysBeforeToRemind = seed.daysBeforeToRemind,
                     showPriceChanges = seed.showPriceChanges,
-                    trialEndDate = seed.trialEndDate
+                    trialEndDate = seed.trialEndDate,
+                    scheduledReminder = false,
+                    scheduledNotificationId = null
                 )
             )
         }

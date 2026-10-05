@@ -1,6 +1,7 @@
 package com.example.subscriptionmanager.notifications
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.NotificationChannel
@@ -26,13 +27,33 @@ data class Notification(
     val builder: NotificationCompat.Builder
 )
 
+data class ScheduledNotification(
+    val id: Int,
+    val triggerAtMillis: Long
+)
+
 enum class ChannelIds(val id: String) {
     RENEWAL("Renewal")
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+fun requestNotificationPermission(activity: Activity) {
+    // activity is required
+    ActivityCompat.requestPermissions(
+        activity,
+        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+        1
+    )
+}
+
+
 fun areNotificationsEnabled(context: Context): Boolean {
     val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
     return prefs.getBoolean("notifications_enabled", true)
+}
+
+fun areNotificationsAllowed(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 }
 
 fun createNotification(context: Context, title: String, content: String, channelId: ChannelIds): Notification {
@@ -48,22 +69,17 @@ fun createNotification(context: Context, title: String, content: String, channel
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@SuppressLint("MissingPermission")
 fun showNotification(context: Context, notification: Notification) {
     // Check if notifications are turned ON in Settings
     if (!areNotificationsEnabled(context)) return
 
     with(NotificationManagerCompat.from(context)) {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED) {
+        if (!areNotificationsAllowed(context)) {
+            println("No notifications permission bruh, fix this NOW")
 
             if (context is Activity) {
-                ActivityCompat.requestPermissions(
-                    context,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    1
-                )
+                requestNotificationPermission(context)
             }
             return@with
         }
@@ -72,6 +88,7 @@ fun showNotification(context: Context, notification: Notification) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun sendNotification(activity: Activity, notification: Notification) {
     val intent = Intent(activity, MainActivity::class.java).apply {
         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -103,20 +120,27 @@ fun createNotificationChannel(context: Context, name: String, descriptionText: S
     notificationManager.createNotificationChannel(channel)
 }
 
-fun scheduleReminder(context: Context, dateTime: Calendar) {
-    if (!areNotificationsEnabled(context)) return
+fun scheduleReminder(context: Context, dateTime: Calendar, subscriptionId: Int): ScheduledNotification? {
+    if (!areNotificationsEnabled(context)) return null
 
     val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-    val intent = Intent(context, ReminderReceiver::class.java)
+    current_notification_id++
+    val scheduledNotification = ScheduledNotification(current_notification_id, dateTime.timeInMillis)
+
+    val intent = Intent(context, ReminderReceiver::class.java).apply {
+        putExtra("EXTRA_SUBSCRIPTION_ID", subscriptionId)
+    }
     val pendingIntent = PendingIntent.getBroadcast(
-        context, 1001, intent,
+        context,
+        scheduledNotification.id,
+        intent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
-    val triggerAtMillis = dateTime.timeInMillis
-
     alarmManager.setAndAllowWhileIdle(
-        AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent
+        AlarmManager.RTC_WAKEUP, scheduledNotification.triggerAtMillis, pendingIntent
     )
+
+    return scheduledNotification
 }

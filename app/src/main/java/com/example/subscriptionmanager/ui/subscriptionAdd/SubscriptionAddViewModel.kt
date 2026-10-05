@@ -1,13 +1,19 @@
 package com.example.subscriptionmanager.ui.subscriptionAdd
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.subscriptionmanager.SubscriptionManagerApplication
 import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.data.entities.Category
 import com.example.subscriptionmanager.data.entities.CategoryEntity
 import com.example.subscriptionmanager.data.entities.NotificationEntity
 import com.example.subscriptionmanager.data.entities.SubscriptionEntity
 import com.example.subscriptionmanager.data.repository.SubscriptionRepository
+import com.example.subscriptionmanager.notifications.areNotificationsAllowed
+import com.example.subscriptionmanager.notifications.areNotificationsEnabled
+import com.example.subscriptionmanager.notifications.scheduleReminder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,10 +38,16 @@ data class SubscriptionFormState(
 )
 
 class SubscriptionAddViewModel(
-    private val repository: SubscriptionRepository
-) : ViewModel() {
+    private val application: Application
+) : AndroidViewModel(application) {
 
-    private val _formState = MutableStateFlow(SubscriptionFormState())
+    private val _formState = MutableStateFlow(
+        SubscriptionFormState(
+            shouldRemind = areNotificationsAllowed(application) && areNotificationsEnabled(application)
+        )
+    )
+
+    val repository = (application.applicationContext as SubscriptionManagerApplication).repository
     val formState: StateFlow<SubscriptionFormState> = _formState
 
     private var originalEntity: SubscriptionEntity? = null
@@ -75,7 +87,7 @@ class SubscriptionAddViewModel(
                     billingPeriod = periodEnum,
                     startDate = entity.startDate,
                     daysBeforeToRemind = notif?.daysBeforeToRemind ?: 3,
-                    shouldRemind = notif?.shouldRemind ?: true,
+                    shouldRemind = notif?.shouldRemind ?: (areNotificationsEnabled(application) && areNotificationsAllowed(application)),
                     description = entity.description ?: "",
                     status = entity.status
                 )
@@ -133,6 +145,33 @@ class SubscriptionAddViewModel(
 
         return renewal
     }
+
+    private fun addNotification(notification: NotificationEntity) {
+        viewModelScope.launch {
+            val c = Calendar.getInstance()
+            c.add(Calendar.SECOND, 10)
+            val scheduledNotification = scheduleReminder(
+                application,
+                notification.reminderDate,
+                notification.subscriptionId
+            )
+
+            val updatedNotification = NotificationEntity(
+                id = notification.id,
+                subscriptionId = notification.subscriptionId,
+                shouldRemind = notification.shouldRemind,
+                reminderDate = notification.reminderDate,
+                scheduledReminder = scheduledNotification != null,  // this can fail
+                scheduledNotificationId = scheduledNotification?.id,
+                daysBeforeToRemind = notification.daysBeforeToRemind,
+                showPriceChanges = notification.showPriceChanges,
+                trialEndDate = notification.trialEndDate
+            )
+
+            repository.insertNotification(updatedNotification)
+        }
+    }
+
     private fun addPeriod(cal: Calendar, billingPeriod: BillingPeriod) {
         when (billingPeriod) {
             BillingPeriod.WEEKLY -> cal.add(Calendar.WEEK_OF_YEAR, 1)
@@ -196,20 +235,20 @@ class SubscriptionAddViewModel(
                                 repository.getNotificationsForSubscription(existingId).firstOrNull()
                             val existingNotif = existingNotifications?.firstOrNull()
                             if (existingNotif != null) {
-                                repository.insertNotification(
-                                    existingNotif.copy(daysBeforeToRemind = daysBefore)
-                                )
+                                addNotification(existingNotif.copy(daysBeforeToRemind = daysBefore))
                             } else {
                                 val reminderCal = (calculatedRenewal.clone() as Calendar).apply {
                                     add(Calendar.DAY_OF_MONTH, -daysBefore)
                                 }
-                                repository.insertNotification(
+                                addNotification(
                                     NotificationEntity(
                                         subscriptionId = existingId,
                                         shouldRemind = shouldRemind,
                                         reminderDate = reminderCal,
                                         daysBeforeToRemind = daysBefore,
-                                        showPriceChanges = true
+                                        showPriceChanges = true,
+                                        scheduledReminder = false,
+                                        scheduledNotificationId = null
                                     )
                                 )
                             }
@@ -240,13 +279,15 @@ class SubscriptionAddViewModel(
                             val reminderCal = (calculatedRenewal.clone() as Calendar).apply {
                                 add(Calendar.DAY_OF_MONTH, -daysBefore)
                             }
-                            repository.insertNotification(
+                            addNotification(
                                 NotificationEntity(
                                     subscriptionId = newSubscriptionId,
                                     shouldRemind = shouldRemind,
                                     reminderDate = reminderCal,
                                     daysBeforeToRemind = daysBefore,
-                                    showPriceChanges = true
+                                    showPriceChanges = true,
+                                    scheduledReminder = false,
+                                    scheduledNotificationId = null
                                 )
                             )
                         }
