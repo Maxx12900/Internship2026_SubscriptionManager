@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.util.Calendar
-
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 data class Seed(
     val name: String,
     val packageName: String,
@@ -54,6 +54,7 @@ class SubscriptionManagerApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        PDFBoxResourceLoader.init(applicationContext)
         applicationScope.launch {
             database.clearAllTables()
             seedDatabase()

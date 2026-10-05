@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Calendar
+import com.example.subscriptionmanager.util.PendingStatementImport
 
 data class SubscriptionFormState(
     val id: Int = 0,
@@ -142,6 +143,24 @@ class SubscriptionAddViewModel(
             BillingPeriod.YEARLY -> cal.add(Calendar.YEAR, 1)
         }
     }
+    // In SubscriptionAddViewModel.kt:
+
+    fun prefillFromDetected(
+        name: String,
+        price: Double,
+        packageName: String?,
+        paymentDate: Calendar
+    ) {
+        _formState.value = SubscriptionFormState(
+            id = 0, // Add Mode
+            name = name,
+            packageName = packageName,
+            price = price.toString(),
+            category = Category.STREAMING,
+            billingPeriod = BillingPeriod.MONTHLY,
+            startDate = paymentDate
+        )
+    }
     fun save(onSuccess: () -> Unit) {
         val state = _formState.value
         val trimmedName = state.name.trim()
@@ -252,7 +271,18 @@ class SubscriptionAddViewModel(
                         }
 
                         withContext(Dispatchers.Main) {
-                            onSuccess()
+                            // If saving an item imported from bank statement, remove it from the remaining list!
+                            PendingStatementImport.activeList?.let { list ->
+                                val inspectingName = PendingStatementImport.item?.name
+
+                                // Keeps ONLY the remaining unimported items
+                                val remaining = list.filter { it.name != inspectingName && it.name != trimmedName }
+
+                                PendingStatementImport.activeList = if (remaining.isNotEmpty()) remaining else null
+                                PendingStatementImport.item = null
+                            }
+
+                            onSuccess() // Navigates back to SubscriptionListScreen
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
