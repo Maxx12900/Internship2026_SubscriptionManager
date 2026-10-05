@@ -74,54 +74,6 @@ fun SettingsScreen(
                 )
             }
 
-            // User Profile Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Surface(
-                        modifier = Modifier.size(56.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = state.username.take(1).uppercase(),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 22.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
-
-                    Column {
-                        Text(
-                            text = state.username,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            // Preferences Section Title
-            Text(
-                text = "Preferences",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
             // Preference Options List
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 PreferenceItem(
@@ -166,10 +118,6 @@ fun SettingsScreen(
             // Log Out Button
             Button(
                 onClick = {
-                    context.getSharedPreferences("active_user", Context.MODE_PRIVATE)
-                        .edit()
-                        .clear()
-                        .apply()
                     onLogOut()
                 },
                 modifier = Modifier

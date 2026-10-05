@@ -70,7 +70,6 @@ class MainActivity : ComponentActivity() {
                                     popUpTo("login") { inclusive = true }
                                 }
                             },
-                            onLogIn = { rootNav.popBackStack() }
                         )
                     }
                     composable("home") {

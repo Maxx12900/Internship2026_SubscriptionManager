@@ -33,8 +33,10 @@ fun LoginScreen(
         onSubmit = { vm.logIn(onLoggedIn) },
     ) {
         Row(Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Don't have an account ? ", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            LinkText("Create here", onCreateAccount, underline = true)
+            if (!vm.isRegistered()) {
+                Text("Don't have an account ? ", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                LinkText("Create here", onCreateAccount, underline = true)
+            }
         }
     }
 }
@@ -42,7 +44,6 @@ fun LoginScreen(
 @Composable
 fun SignUpScreen(
     onAccountCreated: () -> Unit,
-    onLogIn: () -> Unit,
     vm: AuthViewModel = viewModel(),
 ) {
     val context = LocalContext.current
@@ -50,15 +51,7 @@ fun SignUpScreen(
         vm = vm,
         buttonText = "Create Account",
         onSubmit = { vm.signUp(onAccountCreated) },
-    ) {
-        Row(
-            Modifier.fillMaxWidth().padding(top = 12.dp),
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Text("Already have an account ? ", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            LinkText("Log in", onLogIn)
-        }
-    }
+    ) {}
 }
 
 @Composable
@@ -79,8 +72,6 @@ private fun AuthLayout(
             fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(28.dp))
 
-        FieldLabel("Username")
-        AuthField(vm.username, vm.onUsername(), KeyboardType.Email, password = false)
         Spacer(Modifier.height(16.dp))
 
         FieldLabel("Password")
@@ -107,7 +98,6 @@ private fun AuthLayout(
     }
 }
 
-private fun AuthViewModel.onUsername(): (String) -> Unit = ::onUsernameChange
 private fun AuthViewModel.onPassword(): (String) -> Unit = ::onPasswordChange
 
 @Composable
