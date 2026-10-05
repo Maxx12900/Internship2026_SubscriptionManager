@@ -30,8 +30,13 @@ enum class ChannelIds(val id: String) {
     RENEWAL("Renewal")
 }
 
+fun areNotificationsEnabled(context: Context): Boolean {
+    val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+    return prefs.getBoolean("notifications_enabled", true)
+}
+
 fun createNotification(context: Context, title: String, content: String, channelId: ChannelIds): Notification {
-    current_notification_id++  // make sure each notification is unique
+    current_notification_id++
 
     val builder = NotificationCompat.Builder(context, channelId.id)
         .setSmallIcon(R.drawable.ic_home)
@@ -39,21 +44,20 @@ fun createNotification(context: Context, title: String, content: String, channel
         .setContentText(content)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-    val notification = Notification(current_notification_id, builder)
-
-    return notification
+    return Notification(current_notification_id, builder)
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun showNotification(context: Context, notification: Notification) {
-    with (NotificationManagerCompat.from(context)) {
+    // Check if notifications are turned ON in Settings
+    if (!areNotificationsEnabled(context)) return
+
+    with(NotificationManagerCompat.from(context)) {
         if (ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED) {
 
-            // Request permission to send notifications here, but only if context is an instance of Activity
-            // TODO: if the user already denied giving access to notifications, persuade them
             if (context is Activity) {
                 ActivityCompat.requestPermissions(
                     context,
@@ -61,8 +65,7 @@ fun showNotification(context: Context, notification: Notification) {
                     1
                 )
             }
-
-            return@with  // return from the current "with" label
+            return@with
         }
 
         notify(notification.id, notification.builder.build())
@@ -83,7 +86,6 @@ fun sendNotification(activity: Activity, notification: Notification) {
     )
 
     notification.builder.setContentIntent(pendingIntent)
-
     showNotification(activity, notification)
 }
 
@@ -101,8 +103,9 @@ fun createNotificationChannel(context: Context, name: String, descriptionText: S
     notificationManager.createNotificationChannel(channel)
 }
 
-
 fun scheduleReminder(context: Context, dateTime: Calendar) {
+    if (!areNotificationsEnabled(context)) return
+
     val alarmManager = context.getSystemService(AlarmManager::class.java)
 
     val intent = Intent(context, ReminderReceiver::class.java)

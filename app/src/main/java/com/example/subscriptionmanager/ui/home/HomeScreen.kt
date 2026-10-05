@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.typography
@@ -40,6 +41,7 @@ import com.example.subscriptionmanager.data.entities.Category
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.ui.common.padding
+import com.example.subscriptionmanager.util.CurrencyManager
 import kotlin.math.roundToInt
 
 @Composable
@@ -103,19 +105,24 @@ fun HomeScreen(
 
 @Composable
 private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCount: Int) {
+    val currentCurrency by CurrencyManager.currency.collectAsState()
     Card(
-        shape = RoundedCornerShape(padding)
+        shape = RoundedCornerShape(padding),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant) // Theme-aware card
+
     ) {
         Column(modifier = Modifier.padding(padding)) {
             Text(
                 "MONTHLY SPENT",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
+                color = colorScheme.primary
             )
             Text(
-                "$${"%.2f".format(monthlySpent)}",
+                text = CurrencyManager.formatPrice(monthlySpent, currentCurrency),
                 fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.size(12.dp))
             Row(
@@ -123,7 +130,11 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("$${"%.2f".format(yearlySpent)} / year", fontSize = 13.sp)
+                Text(
+                    text = "${CurrencyManager.formatPrice(yearlySpent, currentCurrency)} / year",
+                    fontSize = 13.sp,
+                    color = Color(0xFF49454F)
+                )
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 12.dp, vertical = 4.dp)
@@ -149,13 +160,21 @@ private fun CategoryBreakdown(categorySpends: List<CategorySpend>) {
 
 @Composable
 private fun CategoryRow(spend: CategorySpend) {
+    val currentCurrency by CurrencyManager.currency.collectAsState()
+
     val percentage = (spend.fractionOfTotal * 100).roundToInt()
 
     Column {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("${spend.category.displayName()} - $percentage %", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Text("$${"%.2f".format(spend.monthlyAmount)}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(spend.category.displayName(), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(
+                    text = CurrencyManager.formatPrice(spend.monthlyAmount, currentCurrency),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+
         }
+
         Spacer(Modifier.size(6.dp))
         Box(
             modifier = Modifier
@@ -196,6 +215,7 @@ private fun HomeSubscriptionCard(
     row: HomeSubscriptionRow,
     onClick: () -> Unit
 ) {
+    val currentCurrency by CurrencyManager.currency.collectAsState()
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
@@ -214,7 +234,11 @@ private fun HomeSubscriptionCard(
                 Text(row.subtitle, fontSize = 12.sp)
             }
             Spacer(Modifier.size(8.dp))
-            Text("$${"%.2f".format(row.price)}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(
+                text = CurrencyManager.formatPrice(row.price, currentCurrency),
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
             Spacer(Modifier.size(8.dp))
             StatusPill(row.isActive)
         }

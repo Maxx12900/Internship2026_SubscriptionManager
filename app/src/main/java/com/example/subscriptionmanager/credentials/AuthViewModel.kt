@@ -88,9 +88,17 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
             loading = true
             validate()?.let { error = it; loading = false; return@launch }
             accounts.register(username.trim(), password)
+                .onSuccess {
+                    // SAVE USERNAME IMMEDIATELY ON SIGN UP!
+                    getApplication<Application>()
+                        .getSharedPreferences("active_user", Context.MODE_PRIVATE)
+                        .edit(commit = true) {
+                            putString("logged_in_username", username.trim())
+                        }
+                    onSuccess()
+                }
                 .onFailure { error = it.message ?: "Could not create account"; loading = false; return@launch }
             loading = false
-            onSuccess()
         }
     }
 
@@ -99,7 +107,15 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
             loading = true
             validate()?.let { error = it; loading = false; return@launch }
             accounts.authenticate(username.trim(), password)
-                .onSuccess { onSuccess() }
+                .onSuccess {
+                    // SAVE USERNAME IMMEDIATELY ON LOG IN!
+                    getApplication<Application>()
+                        .getSharedPreferences("active_user", Context.MODE_PRIVATE)
+                        .edit(commit = true) {
+                            putString("logged_in_username", username.trim())
+                        }
+                    onSuccess()
+                }
                 .onFailure { error = it.message ?: "Incorrect username or password" }
             loading = false
         }
