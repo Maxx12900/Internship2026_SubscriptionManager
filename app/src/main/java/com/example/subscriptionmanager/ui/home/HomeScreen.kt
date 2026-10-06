@@ -166,7 +166,7 @@ private fun CategoryRow(spend: CategorySpend) {
 
     Column {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(spend.category.displayName(), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text("${spend.category.displayName()} - ${percentage}%", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Text(
                     text = CurrencyManager.formatPrice(spend.monthlyAmount, currentCurrency),
                     fontWeight = FontWeight.Bold,
