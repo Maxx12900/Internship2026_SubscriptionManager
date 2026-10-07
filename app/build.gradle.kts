@@ -60,6 +60,9 @@ dependencies {
     // Credentials
     implementation(libs.androidx.credentials)
 
+    //pdf parser
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

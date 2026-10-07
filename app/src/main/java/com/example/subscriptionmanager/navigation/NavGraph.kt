@@ -19,6 +19,7 @@ import com.example.subscriptionmanager.ui.SettingsScreen.SettingsScreen
 import com.example.subscriptionmanager.ui.subscriptionAdd.SubscriptionAddScreen
 import com.example.subscriptionmanager.ui.subscriptionDetails.SubscriptionDetailsScreen
 import com.example.subscriptionmanager.ui.subscriptionList.SubscriptionListScreen
+import com.example.subscriptionmanager.ui.analytics.AnalyticsScreen // Add import
 
 sealed class Screen(val route: String) {
     object Home                 : Screen("home")
@@ -83,7 +84,9 @@ fun AppNavGraph(onLogOut:() -> Unit = {}) {
             }
 
             // Analytics screen
-            composable(Screen.Analytics.route) {}
+            composable(Screen.Analytics.route) {
+                AnalyticsScreen()
+            }
 
             // Settings screen
             composable(Screen.Settings.route) {}

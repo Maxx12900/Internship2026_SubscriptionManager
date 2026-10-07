@@ -1,10 +1,12 @@
 package com.example.subscriptionmanager.ui.subscriptionAdd
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,13 +29,12 @@ import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.ui.common.fieldHeight
 import com.example.subscriptionmanager.ui.common.padding
+import com.example.subscriptionmanager.util.PendingStatementImport
 import com.example.subscriptionmanager.util.getInstalledApps
-import android.app.DatePickerDialog
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import androidx.compose.ui.focus.focusProperties
 
 @Composable
 fun SubscriptionAddScreen(
@@ -47,6 +49,9 @@ fun SubscriptionAddScreen(
     )
 
     val formState by viewModel.formState.collectAsState()
+
+    var appSearchQuery by remember { mutableStateOf("") }
+    var appDropdownExpanded by remember { mutableStateOf(false) }
 
     val installedApps = remember(context, formState.packageName, formState.name) {
         val systemApps = getInstalledApps(context)
@@ -67,6 +72,22 @@ fun SubscriptionAddScreen(
     LaunchedEffect(subscriptionId) {
         if (subscriptionId != null) {
             viewModel.loadSubscription(subscriptionId)
+        } else {
+            PendingStatementImport.item?.let { pendingItem ->
+                viewModel.prefillFromDetected(
+                    name = pendingItem.name,
+                    price = pendingItem.price,
+                    packageName = pendingItem.packageName,
+                    paymentDate = pendingItem.paymentDate
+                )
+                PendingStatementImport.item = null
+            }
+        }
+    }
+
+    LaunchedEffect(formState.name) {
+        if (formState.name.isNotBlank()) {
+            appSearchQuery = formState.name
         }
     }
 
@@ -102,15 +123,6 @@ fun SubscriptionAddScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     //color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable { onCancel() }
-                )
-            }
-
-            formState.error?.let { err ->
-                Text(
-                    text = err,
-                    color = MaterialTheme.colorScheme.error, //there is a system error color
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
                 )
             }
 
@@ -158,8 +170,6 @@ fun SubscriptionAddScreen(
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -187,7 +197,6 @@ fun SubscriptionAddScreen(
                         .fillMaxWidth()
                         .height(fieldHeight)
                 )
-
                 DropdownMenu(
                     expanded = appDropdownExpanded && filteredAppSuggestions.isNotEmpty(),
                     onDismissRequest = { appDropdownExpanded = false },
@@ -295,7 +304,7 @@ fun SubscriptionAddScreen(
                 onSelect = { viewModel.updateBillingPeriod(it) }
             )
 
-            // Start Date Field Label and Variables
+            // Start Date
             FieldLabel(label = "Start date", isRequired = true)
             var showDatePicker by remember { mutableStateOf(false) }
             val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
@@ -372,7 +381,8 @@ fun SubscriptionAddScreen(
                 }
             }
 
-            // 7. Description
+
+            // Description
             FieldLabel(label = "Description", isRequired = false)
             CustomTextField(
                 value = formState.description,

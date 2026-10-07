@@ -2,11 +2,16 @@ package com.example.subscriptionmanager.ui.subscriptionList
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.data.entities.Category
+import com.example.subscriptionmanager.data.entities.CategoryEntity
 import com.example.subscriptionmanager.data.entities.SortBy
+import com.example.subscriptionmanager.data.entities.SubscriptionEntity
 import com.example.subscriptionmanager.data.model.Subscription
 import com.example.subscriptionmanager.data.repository.SubscriptionRepository
 import com.example.subscriptionmanager.data.toSubscription
+import com.example.subscriptionmanager.util.DetectedSubscription
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +21,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class SubscriptionListViewModel(
     private val subscriptionRepository: SubscriptionRepository
@@ -67,6 +74,31 @@ class SubscriptionListViewModel(
         _selectedCategories.value = _draftCategories.value
         _sortingOption.value = _draftSort.value
         _isAscending.value = _draftAsc.value
+    }
+
+    fun importDetectedSubscriptions(detectedList: List<DetectedSubscription>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            detectedList.forEach { item ->
+                val nextRenewal = (item.paymentDate.clone() as Calendar).apply { add(Calendar.MONTH, 1) }
+
+                val newSub = SubscriptionEntity(
+                    id = 0,
+                    name = item.name,
+                    packageName = item.packageName,
+                    price = item.price,
+                    billingPeriod = BillingPeriod.MONTHLY.ordinal,
+                    startDate = item.paymentDate,
+                    nextRenewalDate = nextRenewal,
+                    status = true,
+                    score = 0,
+                    description = "Imported from Bank Statement"
+                )
+                val newId = subscriptionRepository.insertSubscription(newSub).toInt()
+                subscriptionRepository.insertCategory(
+                    CategoryEntity(subscriptionId = newId, category = Category.STREAMING.value)
+                )
+            }
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
