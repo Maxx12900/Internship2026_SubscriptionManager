@@ -28,7 +28,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.subscriptionmanager.ui.common.padding
-
+import androidx.compose.ui.res.stringResource
+import com.example.subscriptionmanager.R
 sealed class BottomNavItem(
     val route: String,
     val title: String,
@@ -39,6 +40,7 @@ sealed class BottomNavItem(
     object Analytics : BottomNavItem(Screen.Analytics.route, "Analytics", Icons.Default.DateRange)
     object Settings : BottomNavItem(Screen.Settings.route, "Settings", Icons.Default.Settings)
 }
+
 
 @Composable
 fun AppBottomNavigationBar(
@@ -94,8 +96,15 @@ fun AppBottomNavigationBar(
                         )
                     },
                     label = {
+                        val labelText = when (item.route) {
+                            Screen.Home.route -> stringResource(R.string.home)
+                            Screen.SubscriptionList.route -> stringResource(R.string.list)
+                            Screen.Analytics.route -> stringResource(R.string.analytics)
+                            Screen.Settings.route -> stringResource(R.string.settings)
+                            else -> item.title
+                        }
                         Text(
-                            text = item.title,
+                            text = labelText,
                             fontSize = 11.sp
                         )
                     },

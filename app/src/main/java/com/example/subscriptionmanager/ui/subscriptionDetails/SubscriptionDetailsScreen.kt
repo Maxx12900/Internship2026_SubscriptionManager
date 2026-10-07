@@ -11,9 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.subscriptionmanager.R
 import com.example.subscriptionmanager.SubscriptionManagerApplication
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
@@ -31,6 +33,7 @@ fun SubscriptionDetailsScreen(
     val context = LocalContext.current
     val repository = (context.applicationContext as SubscriptionManagerApplication).repository
     val currentCurrency by CurrencyManager.currency.collectAsState()
+
     val viewModel: SubscriptionDetailsViewModel = viewModel(
         factory = GenericViewModelFactory { SubscriptionDetailsViewModel(repository) }
     )
@@ -97,7 +100,7 @@ fun SubscriptionDetailsScreen(
                         Spacer(Modifier.width(20.dp))
                         Column {
                             Text(
-                                text = if (sub.status) "Active" else "Inactive",
+                                text = if (sub.status) stringResource(R.string.active) else stringResource(R.string.inactive),
                                 color = if (sub.status) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMedium
@@ -110,15 +113,14 @@ fun SubscriptionDetailsScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             InfoCard(
-                                "PRICE",
-                                //"$${sub.price} / mo",
+                                label = stringResource(R.string.price_label),
                                 value = "${CurrencyManager.formatPrice(sub.price, currentCurrency)} / mo",
-                                Modifier.weight(1f)
+                                modifier = Modifier.weight(1f)
                             )
                             InfoCard(
-                                "NEXT RENEWAL",
-                                formattedDate,
-                                Modifier.weight(1f)
+                                label = stringResource(R.string.next_renewal_label),
+                                value = formattedDate,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }
@@ -137,7 +139,7 @@ fun SubscriptionDetailsScreen(
                                 contentColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
-                            Text("Edit")
+                            Text(stringResource(R.string.edit))
                         }
                         Button(
                             onClick = {
@@ -150,7 +152,7 @@ fun SubscriptionDetailsScreen(
                                 contentColor = MaterialTheme.colorScheme.onError
                             )
                         ) {
-                            Text("Delete")
+                            Text(stringResource(R.string.delete))
                         }
                     }
                 }
@@ -164,14 +166,15 @@ private fun InfoCard(label: String, value: String, modifier: Modifier = Modifier
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), // Theme-aware
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Spacer(Modifier.height(4.dp))
             Text(
                 value,

@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -50,7 +51,7 @@ import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.util.CurrencyManager
-
+import com.example.subscriptionmanager.R
 @Composable
 // Main function, draws the whole screen with list of subscriptions
 fun SubscriptionListScreen(
@@ -95,13 +96,15 @@ fun SubscriptionListScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Subscription List",
+                    text = stringResource(R.string.subscription_list),
                     style = typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
                 )
-                TextButton(onClick = { showFilterDialog = true }) { Text("Options") }
+                TextButton(onClick = { showFilterDialog = true }) {
+                    Text(stringResource(R.string.options))
+                }
             }
 
             LazyColumn(
@@ -173,7 +176,7 @@ fun SubscriptionCard(
             ) {
                 Text(text = CurrencyManager.formatPrice(price, currentCurrency))
                 Text(
-                    if (isActive) "Active" else "Inactive"
+                    text = if (isActive) stringResource(R.string.active) else stringResource(R.string.inactive)
                 )
             }
         }
@@ -195,13 +198,13 @@ private fun FilterSortDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Options") },
+        title = { Text(stringResource(R.string.options)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Categories", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.categories), fontWeight = FontWeight.Bold)
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -212,12 +215,12 @@ private fun FilterSortDialog(
                         FilterChip(
                             selected = category in selectedCategories,
                             onClick = { onToggleCategory(category) },
-                            label = { Text(category.name.lowercase().replaceFirstChar { it.uppercase() }) }
+                            label = { Text(text = category.toTranslatedString()) }
                         )
                     }
                 }
 
-                Text("Sort by", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.sort_by), fontWeight = FontWeight.Bold)
                 SortBy.entries.forEach { option ->
                     Row(
                         modifier = Modifier
@@ -226,11 +229,12 @@ private fun FilterSortDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(selected = option == sortOption, onClick = { onSortSelected(option) })
-                        Text(option.name
-                            .lowercase()
-                            .replaceFirstChar { it.uppercase() }
-                            .replace("_", " ")
-                        )
+//                        Text(option.name
+//                            .lowercase()
+//                            .replaceFirstChar { it.uppercase() }
+//                            .replace("_", " ")
+//                        )
+                        Text(text = option.toTranslatedString())
                     }
                 }
 
@@ -239,12 +243,33 @@ private fun FilterSortDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(if (isAscending) "Ascending" else "Descending")
+                    Text(
+                        if (isAscending) stringResource(R.string.ascending) else stringResource(R.string.descending)
+                    )
                     Switch(checked = isAscending, onCheckedChange = onAscendingChange)
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onApply) { Text("Done") } },
-        dismissButton = { TextButton(onClick = onReset) { Text("Reset") } }
+        confirmButton = { TextButton(onClick = onApply) { Text(stringResource(R.string.done)) } },
+        dismissButton = { TextButton(onClick = onReset) { Text(stringResource(R.string.reset)) } }
     )
+}
+@Composable
+private fun Category.toTranslatedString(): String {
+    return when (this) {
+        Category.STREAMING -> stringResource(R.string.category_streaming)
+        Category.PRODUCTIVITY -> stringResource(R.string.category_productivity)
+        Category.GAMES -> stringResource(R.string.category_games)
+        Category.FOOD -> stringResource(R.string.category_food)
+        Category.NONE -> ""
+    }
+}
+
+@Composable
+private fun SortBy.toTranslatedString(): String {
+    return when (this) {
+        SortBy.NAME -> stringResource(R.string.sort_name)
+        SortBy.PRICE -> stringResource(R.string.sort_price)
+        SortBy.NEXT_RENEWAL_DATE -> stringResource(R.string.sort_next_renewal_date)
+    }
 }
