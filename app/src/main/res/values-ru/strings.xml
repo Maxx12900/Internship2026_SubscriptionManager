@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Менеджер подписок</string>
+    <string name="subscription_list">Список подписок</string>
+    <string name="settings">Настройки</string>
+    <string name="analytics">Аналитика</string>
+    <string name="home">Главная</string>
+    <string name="list">Список</string>
+
+    <!-- Home Screen -->
+    <string name="monthly_spent">РАСХОДЫ В МЕСЯЦ</string>
+    <string name="by_category">ПО КАТЕГОРИЯМ</string>
+    <string name="recent_purchases">Недавние покупки</string>
+    <string name="upcoming_payments">Предстоящие платежи</string>
+    <string name="active">Активна</string>
+    <string name="inactive">Неактивна</string>
+
+    <!-- Add / Edit Screen -->
+    <string name="add_subscription">Добавить подписку</string>
+    <string name="edit_subscription">Редактировать подписку</string>
+    <string name="save_subscription">Сохранить подписку</string>
+    <string name="save_changes">Сохранить изменения</string>
+    <string name="cancel">Отмена</string>
+    <string name="app_label">Приложение</string>
+    <string name="subscription_name">Название подписки</string>
+    <string name="category">Категория</string>
+    <string name="price">Цена</string>
+    <string name="billing_period">Период списания</string>
+    <string name="start_date">Дата начала</string>
+    <string name="remind_me">Напомнить мне</string>
+    <string name="days_before_remind">Дней до напоминания</string>
+    <string name="description">Описание</string>
+
+    <!-- Settings & Navigation -->
+    <string name="preferences">Предпочтения</string>
+    <string name="language">Язык</string>
+    <string name="date_format">Формат даты</string>
+    <string name="time_format">Формат времени</string>
+    <string name="currency">Валюта</string>
+    <string name="mode">Режим</string>
+    <string name="notifications">Уведомления</string>
+    <string name="log_out">Выйти</string>
+    <string name="options">Опции</string>
+    <string name="import_statement">Импорт из банковской выписки</string>
+    <string name="add_manually">Добавить вручную</string>
+
+    <string name="renews_today">Продлевается сегодня</string>
+    <string name="renews_tomorrow">Продлевается завтра</string>
+    <string name="renews_in_days">Продлевается через %1$d дней</string>
+    <string name="added_today">Добавлено сегодня</string>
+    <string name="added_yesterday">Добавлено вчера</string>
+    <string name="added_days_ago">Добавлено %1$d дней назад</string>
+
+    <string name="system_mode">Системный</string>
+    <string name="light_mode">Светлый</string>
+    <string name="dark_mode">Тёмный</string>
+    <string name="on">Вкл</string>
+    <string name="off">Выкл</string>
+
+    <string name="categories">Категории</string>
+    <string name="sort_by">Сортировать по</string>
+    <string name="ascending">По возрастанию</string>
+    <string name="descending">По убыванию</string>
+    <string name="done">Готово</string>
+    <string name="reset">Сброс</string>
+
+
+    <!-- Categories -->
+    <string name="category_streaming">Стриминг</string>
+    <string name="category_productivity">Продуктивность</string>
+    <string name="category_games">Игры</string>
+    <string name="category_food">Еда</string>
+    <string name="category_entertainment">Развлечения</string>
+    <string name="category_education">Образование</string>
+    <string name="category_health_fitness">Здоровье и фитнес</string>
+    <string name="category_finance">Финансы</string>
+
+    <!-- Sorting -->
+    <string name="sort_name">Имя</string>
+    <string name="sort_price">Цена</string>
+    <string name="sort_next_renewal_date">Дата продления</string>
+
+    <!-- Analytics -->
+    <string name="monthly_avg">Среднее в месяц</string>
+    <string name="top_category">Топ категория</string>
+    <string name="expense_by_category">РАСХОДЫ ПО КАТЕГОРИЯМ</string>
+    <string name="spending_trends">ТРЕНДЫ РАСХОДОВ (ПОСЛЕДНИЕ 6 МЕСЯЦЕВ)</string>
+    <string name="total_mo">Всего/мес</string>
+
+    <!-- Details Screen -->
+    <string name="price_label">ЦЕНА</string>
+    <string name="next_renewal_label">СЛЕДУЮЩЕЕ СПИСАНИЕ</string>
+    <string name="delete">Удалить</string>
+    <string name="edit">Изменить</string>
+
+    <!-- Billing Periods -->
+    <string name="weekly">Еженедельно</string>
+    <string name="monthly">Ежемесячно</string>
+    <string name="three_months">Каждые 3 месяца</string>
+    <string name="six_months">Каждые 6 месяцев</string>
+    <string name="yearly">Ежегодно</string>
+
+    <string name="lang_english">Английский</string>
+    <string name="lang_romanian">Румынский</string>
+    <string name="lang_russian">Русский</string>
+    <string name="select_language">Выберите язык</string>
+
+    <string name="select_mode">Выберите режим</string>
+    <string name="select_time_format">Выберите формат времени</string>
+    <string name="select_date_format">Выберите формат даты</string>
+    <string name="select_currency">Выберите валюту</string>
+
+    <string name="time_24_hour">24-часовой</string>
+    <string name="time_12_hour">12-часовой</string>
+
+    <string name="date_format_ddmmyyyy">ДД/ММ/ГГГГ</string>
+    <string name="date_format_mmddyyyy">ММ/ДД/ГГГГ</string>
+    <string name="date_format_iso">ГГГГ-ММ-ДД</string>
+
+    <!-- Placeholders -->
+    <string name="placeholder_select_app">Выберите или введите название</string>
+    <string name="placeholder_enter_text">Введите текст здесь</string>
+    <string name="placeholder_select_category">Выберите категорию</string>
+    <string name="placeholder_select_period">Выберите период</string>
+    <string name="placeholder_description">Опциональное описание</string>
+
+    <string name="per_year">/ год</string>
+    <string name="per_month">/ мес</string>
+
+</resources>

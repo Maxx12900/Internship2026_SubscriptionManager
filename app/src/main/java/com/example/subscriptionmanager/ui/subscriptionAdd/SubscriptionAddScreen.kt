@@ -14,12 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.subscriptionmanager.R
 import com.example.subscriptionmanager.SubscriptionManagerApplication
 import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.data.entities.Category
@@ -40,13 +42,15 @@ import java.util.Locale
 
 @Composable
 fun SubscriptionAddScreen(
-    subscriptionId: Int? = null, // null = Add Mode, non-null = Edit Mode
+    subscriptionId: Int? = null,
     onSave: () -> Unit,
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
-    val viewModel: SubscriptionAddViewModel = viewModel()
-
+    val application = context.applicationContext as SubscriptionManagerApplication
+    val viewModel: SubscriptionAddViewModel = viewModel(
+        factory = GenericViewModelFactory { SubscriptionAddViewModel(application) }
+    )
     val formState by viewModel.formState.collectAsState()
 
     val installedApps = remember(context, formState.packageName, formState.name) {
@@ -72,8 +76,8 @@ fun SubscriptionAddScreen(
     }
 
     val isEditMode = subscriptionId != null
-    val screenTitle = if (isEditMode) "Edit Subscription" else "Add Subscription"
-    val buttonText = if (isEditMode) "Save Changes" else "Save Subscription"
+    val screenTitle = if (isEditMode) stringResource(R.string.edit_subscription) else stringResource(R.string.add_subscription)
+    val buttonText = if (isEditMode) stringResource(R.string.save_changes) else stringResource(R.string.save_subscription)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
@@ -98,16 +102,24 @@ fun SubscriptionAddScreen(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "Cancel",
+                    text = stringResource(R.string.cancel),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    //color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable { onCancel() }
                 )
             }
 
-            // App Field with Dropdown Arrow
-            FieldLabel(label = "App", isRequired = false)
+            formState.error?.let { err ->
+                Text(
+                    text = err,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // App Field
+            FieldLabel(label = stringResource(R.string.app_label), isRequired = false)
 
             var appSearchQuery by remember { mutableStateOf("") }
             var appDropdownExpanded by remember { mutableStateOf(false) }
@@ -135,12 +147,12 @@ fun SubscriptionAddScreen(
                     onValueChange = { input ->
                         appSearchQuery = input
                         appDropdownExpanded = true
-                        viewModel.updatePackageName(null) // Clears package if custom text is typed
+                        viewModel.updatePackageName(null)
                         viewModel.updateName(input)
                     },
                     placeholder = {
                         Text(
-                            "Select or type app name",
+                            text = stringResource(R.string.placeholder_select_app),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.LightGray
                         )
@@ -186,7 +198,7 @@ fun SubscriptionAddScreen(
                     properties = PopupProperties(focusable = false),
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
-                        .heightIn(max = 280.dp)   // caps a long list instead of covering the whole screen
+                        .heightIn(max = 280.dp)
                         .background(Color.White, RoundedCornerShape(12.dp))
                 ) {
                     filteredAppSuggestions.forEachIndexed { index, (packageName, appName) ->
@@ -197,7 +209,6 @@ fun SubscriptionAddScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    // icon first — reads better left-to-right than icon trailing
                                     Box(
                                         modifier = Modifier
                                             .size(32.dp)
@@ -234,7 +245,6 @@ fun SubscriptionAddScreen(
                             },
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
                         )
-                        // thin separator between rows, skipped after the last item
                         if (index != filteredAppSuggestions.lastIndex) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -246,25 +256,25 @@ fun SubscriptionAddScreen(
             }
 
             // Subscription name
-            FieldLabel(label = "Subscription name", isRequired = true)
+            FieldLabel(label = stringResource(R.string.subscription_name), isRequired = true)
             CustomTextField(
                 value = formState.name,
                 onValueChange = { viewModel.updateName(it) },
-                placeholder = "Enter text here"
+                placeholder = stringResource(R.string.placeholder_enter_text)
             )
 
             // Category
-            FieldLabel(label = "Category", isRequired = true)
+            FieldLabel(label = stringResource(R.string.category), isRequired = true)
             CustomDropdownField(
                 selected = formState.category,
-                placeholder = "Select category",
+                placeholder = stringResource(R.string.placeholder_select_category),
                 options = Category.entries.filter { it != Category.NONE },
-                toLabel = { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } },
+                toLabel = { it.toTranslatedString() },
                 onSelect = { viewModel.updateCategory(it) }
             )
 
             // Price
-            FieldLabel(label = "Price", isRequired = true)
+            FieldLabel(label = stringResource(R.string.price), isRequired = true)
             CustomTextField(
                 value = formState.price,
                 onValueChange = { input ->
@@ -278,17 +288,17 @@ fun SubscriptionAddScreen(
             )
 
             // Billing period
-            FieldLabel(label = "Billing period", isRequired = true)
+            FieldLabel(label = stringResource(R.string.billing_period), isRequired = true)
             CustomDropdownField(
                 selected = formState.billingPeriod,
-                placeholder = "Select period",
+                placeholder = stringResource(R.string.placeholder_select_period),
                 options = BillingPeriod.entries,
-                toLabel = { it.name.lowercase().replace('_', ' ').replaceFirstChar { c -> c.uppercase() } },
+                toLabel = { it.toTranslatedString() },
                 onSelect = { viewModel.updateBillingPeriod(it) }
             )
 
-            // Start Date Field Label and Variables
-            FieldLabel(label = "Start date", isRequired = true)
+            // Start Date
+            FieldLabel(label = stringResource(R.string.start_date), isRequired = true)
             var showDatePicker by remember { mutableStateOf(false) }
             val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
             val startDateString = remember(formState.startDate) {
@@ -302,7 +312,7 @@ fun SubscriptionAddScreen(
                     .background(Color(0xFFF7F7F8), RoundedCornerShape(12.dp))
                     .clickable { showDatePicker = true }
                     .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart //Vertically
+                contentAlignment = Alignment.CenterStart
             ) {
                 Text(
                     text = startDateString,
@@ -331,11 +341,11 @@ fun SubscriptionAddScreen(
                 }.show()
             }
 
-            Row {// Should remind
+            Row {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    FieldLabel(label = "Remind me", isRequired = false)
+                    FieldLabel(label = stringResource(R.string.remind_me), isRequired = false)
                     Switch(
                         checked = formState.shouldRemind,
                         onCheckedChange = { state ->
@@ -343,7 +353,7 @@ fun SubscriptionAddScreen(
                                 viewModel.updateShouldRemind(state)
                             }
                             if (!areNotificationsAllowed(context)) {
-                                if (context is Activity) {
+                                if (context is Activity && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
                                     requestNotificationPermission(context)
                                 }
                             }
@@ -357,7 +367,7 @@ fun SubscriptionAddScreen(
                 Column(
                     modifier = Modifier.weight(0.8f)
                 ) {
-                    FieldLabel(label = "Days before to remind", isRequired = false)
+                    FieldLabel(label = stringResource(R.string.days_before_remind), isRequired = false)
                     CustomTextField(
                         value = formState.daysBeforeToRemind?.toString() ?: "",
                         onValueChange = { input ->
@@ -371,12 +381,12 @@ fun SubscriptionAddScreen(
                 }
             }
 
-            // 7. Description
-            FieldLabel(label = "Description", isRequired = false)
+            // Description
+            FieldLabel(label = stringResource(R.string.description), isRequired = false)
             CustomTextField(
                 value = formState.description,
                 onValueChange = { viewModel.updateDescription(it) },
-                placeholder = "Optional description"
+                placeholder = stringResource(R.string.placeholder_description)
             )
 
             // Active/Inactive Status Switch (In edit mode)
@@ -392,7 +402,7 @@ fun SubscriptionAddScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = if (formState.status) "Active" else "Inactive",
+                        text = if (formState.status) stringResource(R.string.active) else stringResource(R.string.inactive),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -488,12 +498,12 @@ private fun <T> CustomDropdownField(
     selected: T?,
     placeholder: String,
     options: List<T>,
-    toLabel: (T) -> String,
+    toLabel: @Composable (T) -> String,
     toIcon: (@Composable (T) -> Unit)? = null,
     onSelect: (T) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val displayLabel = selected?.let(toLabel)?.ifBlank { null }
+    val displayLabel = selected?.let { toLabel(it) }?.ifBlank { null }
 
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -509,14 +519,14 @@ private fun <T> CustomDropdownField(
             Text(
                 text = displayLabel ?: placeholder,
                 fontSize = 14.sp,
-                color = if (displayLabel == null)  MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                color = if (displayLabel == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (selected != null && toIcon != null) {
                     toIcon(selected)
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                Text(text = "▾", fontSize = 12.sp, color =  MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(text = "▾", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
@@ -550,5 +560,27 @@ private fun <T> CustomDropdownField(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun BillingPeriod.toTranslatedString(): String {
+    return when (this) {
+        BillingPeriod.WEEKLY -> stringResource(R.string.weekly)
+        BillingPeriod.MONTHLY -> stringResource(R.string.monthly)
+        BillingPeriod.THREE_MONTHS -> stringResource(R.string.three_months)
+        BillingPeriod.SIX_MONTHS -> stringResource(R.string.six_months)
+        BillingPeriod.YEARLY -> stringResource(R.string.yearly)
+    }
+}
+
+@Composable
+private fun Category.toTranslatedString(): String {
+    return when (this) {
+        Category.STREAMING -> stringResource(R.string.category_streaming)
+        Category.PRODUCTIVITY -> stringResource(R.string.category_productivity)
+        Category.GAMES -> stringResource(R.string.category_games)
+        Category.FOOD -> stringResource(R.string.category_food)
+        else -> ""
     }
 }

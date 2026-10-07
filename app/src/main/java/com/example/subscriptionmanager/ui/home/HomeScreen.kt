@@ -43,7 +43,8 @@ import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.util.CurrencyManager
 import kotlin.math.roundToInt
-
+import androidx.compose.ui.res.stringResource
+import com.example.subscriptionmanager.R
 @Composable
 fun HomeScreen(
     onSubscriptionClick: (Int) -> Unit
@@ -65,7 +66,11 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(padding)
     ) {
         Column {
-            Text("Subscription Manager", style = typography.headlineLarge, fontWeight = FontWeight.Bold)
+            Text(
+                text = stringResource(R.string.app_name),
+                style = typography.headlineLarge,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         MonthlySpentCard(
@@ -80,7 +85,7 @@ fun HomeScreen(
             FilterChip(
                 selected = selectedTab == HomeTab.RECENT_PURCHASES,
                 onClick = { viewModel.selectTab(HomeTab.RECENT_PURCHASES) },
-                label = { Text("Recent purchases") },
+                label = { Text(stringResource(R.string.recent_purchases)) },
                 leadingIcon = {
                     Icon(Icons.AutoMirrored.Filled.List, contentDescription = null, modifier = Modifier.size(16.dp))
                 }
@@ -88,7 +93,7 @@ fun HomeScreen(
             FilterChip(
                 selected = selectedTab == HomeTab.UPCOMING_PAYMENTS,
                 onClick = { viewModel.selectTab(HomeTab.UPCOMING_PAYMENTS) },
-                label = { Text("Upcoming payments") },
+                label = { Text(stringResource(R.string.upcoming_payments)) },
                 leadingIcon = {
                     Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(16.dp))
                 }
@@ -108,12 +113,12 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
     val currentCurrency by CurrencyManager.currency.collectAsState()
     Card(
         shape = RoundedCornerShape(padding),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant) // Theme-aware card
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant)
 
     ) {
         Column(modifier = Modifier.padding(padding)) {
             Text(
-                "MONTHLY SPENT",
+                text = stringResource(R.string.monthly_spent),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.primary
@@ -131,15 +136,20 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "${CurrencyManager.formatPrice(yearlySpent, currentCurrency)} / year",
+                    text = "${CurrencyManager.formatPrice(yearlySpent, currentCurrency)} ${stringResource(R.string.per_year)}",
                     fontSize = 13.sp,
-                    color = Color(0xFF49454F)
+                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
-                    Text("$activeCount active", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "$activeCount ${stringResource(R.string.active).lowercase()}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -151,7 +161,11 @@ private fun CategoryBreakdown(categorySpends: List<CategorySpend>) {
     if (categorySpends.isEmpty()) return
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("BY CATEGORY", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = stringResource(R.string.by_category),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
         categorySpends.forEach { spend ->
             CategoryRow(spend)
         }
@@ -166,7 +180,11 @@ private fun CategoryRow(spend: CategorySpend) {
 
     Column {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("${spend.category.displayName()} - ${percentage}%", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(
+                    text = "${spend.category.toTranslatedString()} - ${percentage}%",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
                 Text(
                     text = CurrencyManager.formatPrice(spend.monthlyAmount, currentCurrency),
                     fontWeight = FontWeight.Bold,
@@ -197,7 +215,6 @@ private fun Category.displayName(): String =
 
 @Composable
 private fun StatusPill(isActive: Boolean) {
-    // CHANGED: Use Theme colors instead of hardcoded hexes for inactive
     val bg = if (isActive) Color(0xFFD0F0D0) else colorScheme.error
     val fg = if (isActive) Color(0xFF4CAF50) else colorScheme.onError
 
@@ -206,7 +223,12 @@ private fun StatusPill(isActive: Boolean) {
             .background(bg, RoundedCornerShape(50))
             .padding(horizontal = 10.dp, vertical = 4.dp)
     ) {
-        Text(if (isActive) "Active" else "Inactive", color = fg, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = if (isActive) stringResource(R.string.active) else stringResource(R.string.inactive), // TRANSLATED
+            color = fg,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -231,7 +253,25 @@ private fun HomeSubscriptionCard(
             Spacer(Modifier.size(padding))
             Column(modifier = Modifier.weight(1f)) {
                 Text(row.name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Text(row.subtitle, fontSize = 12.sp)
+
+                // TRANSLATE SUBTITLE DYNAMICALLY
+                val translatedSubtitle = when {
+                    row.subtitle == "Renews today" -> stringResource(R.string.renews_today)
+                    row.subtitle == "Renews tomorrow" -> stringResource(R.string.renews_tomorrow)
+                    row.subtitle.startsWith("Renews in") -> {
+                        val days = row.subtitle.filter { it.isDigit() }.toIntOrNull() ?: 0
+                        stringResource(R.string.renews_in_days, days)
+                    }
+                    row.subtitle == "Added today" -> stringResource(R.string.added_today)
+                    row.subtitle == "Added yesterday" -> stringResource(R.string.added_yesterday)
+                    row.subtitle.startsWith("Added") -> {
+                        val days = row.subtitle.filter { it.isDigit() }.toIntOrNull() ?: 0
+                        stringResource(R.string.added_days_ago, days)
+                    }
+                    else -> row.subtitle
+                }
+
+                Text(text = translatedSubtitle, fontSize = 12.sp)
             }
             Spacer(Modifier.size(8.dp))
             Text(
@@ -242,5 +282,15 @@ private fun HomeSubscriptionCard(
             Spacer(Modifier.size(8.dp))
             StatusPill(row.isActive)
         }
+    }
+}
+@Composable
+private fun Category.toTranslatedString(): String {
+    return when (this) {
+        Category.STREAMING -> stringResource(R.string.category_streaming)
+        Category.PRODUCTIVITY -> stringResource(R.string.category_productivity)
+        Category.GAMES -> stringResource(R.string.category_games)
+        Category.FOOD -> stringResource(R.string.category_food)
+        else -> ""
     }
 }

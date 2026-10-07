@@ -14,18 +14,41 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.subscriptionmanager.R
 import com.example.subscriptionmanager.ui.common.fieldHeight
 import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.util.AppThemeMode
 import com.example.subscriptionmanager.util.CurrencyManager
 import com.example.subscriptionmanager.util.ThemeManager
+import java.util.Locale
 
 private enum class PreferenceDialogType {
     LANGUAGE, DATE_FORMAT, TIME_FORMAT, CURRENCY, MODE, NOTIFICATIONS
+}
+
+fun changeAppLanguage(context: Context, languageName: String) {
+    val languageCode = when (languageName) {
+        "Romanian" -> "ro"
+        "Russian" -> "ru"
+        else -> "en"
+    }
+    val locale = Locale(languageCode)
+    Locale.setDefault(locale)
+
+    val resources = context.resources
+    val config = resources.configuration
+    config.setLocale(locale)
+    resources.updateConfiguration(config, resources.displayMetrics)
+
+    context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        .edit()
+        .putString("selected_language", languageName)
+        .apply()
 }
 
 @Composable
@@ -41,12 +64,37 @@ fun SettingsScreen(
         viewModel.loadActiveUser()
     }
 
+    val currentDateLabel = when (state.dateFormat) {
+        "MM/DD/YYYY" -> stringResource(R.string.date_format_mmddyyyy)
+        "YYYY-MM-DD" -> stringResource(R.string.date_format_iso)
+        else -> stringResource(R.string.date_format_ddmmyyyy)
+    }
+
+    val currentTimeLabel = if (state.timeFormat == "12-hour") {
+        stringResource(R.string.time_12_hour)
+    } else {
+        stringResource(R.string.time_24_hour)
+    }
+
     val themeMode by ThemeManager.themeMode.collectAsState()
     val currentModeLabel = when (themeMode) {
-        AppThemeMode.SYSTEM -> "System"
-        AppThemeMode.LIGHT -> "Light"
-        AppThemeMode.DARK -> "Dark"
+        AppThemeMode.SYSTEM -> stringResource(R.string.system_mode)
+        AppThemeMode.LIGHT -> stringResource(R.string.light_mode)
+        AppThemeMode.DARK -> stringResource(R.string.dark_mode)
     }
+
+    val currentLanguageLabel = when (state.language) {
+        "Romanian" -> stringResource(R.string.lang_romanian)
+        "Russian" -> stringResource(R.string.lang_russian)
+        else -> stringResource(R.string.lang_english)
+    }
+
+    val notificationStatusLabel = if (state.notificationsEnabled) {
+        stringResource(R.string.on)
+    } else {
+        stringResource(R.string.off)
+    }
+
     var activeDialog by remember { mutableStateOf<PreferenceDialogType?>(null) }
 
     Scaffold(
@@ -67,48 +115,96 @@ fun SettingsScreen(
             ) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Settings",
+                    text = stringResource(R.string.settings),
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
+            // User Profile Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier.size(56.dp),
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = state.username.take(1).uppercase(),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 22.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+
+                    Column {
+                        Text(
+                            text = state.username,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // Preferences Section Title
+            Text(
+                text = stringResource(R.string.preferences),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
             // Preference Options List
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 PreferenceItem(
-                    label = "Language",
-                    value = "${state.language} >",
+                    label = stringResource(R.string.language),
+                    value = "$currentLanguageLabel >",
                     onClick = { activeDialog = PreferenceDialogType.LANGUAGE }
                 )
 
                 PreferenceItem(
-                    label = "Date format",
-                    value = "${state.dateFormat} >",
+                    label = stringResource(R.string.date_format),
+                    value = "$currentDateLabel >",
                     onClick = { activeDialog = PreferenceDialogType.DATE_FORMAT }
                 )
 
                 PreferenceItem(
-                    label = "Time format",
-                    value = "${state.timeFormat} >",
+                    label = stringResource(R.string.time_format),
+                    value = "$currentTimeLabel >",
                     onClick = { activeDialog = PreferenceDialogType.TIME_FORMAT }
                 )
 
                 PreferenceItem(
-                    label = "Currency",
+                    label = stringResource(R.string.currency),
                     value = "$selectedCurrency >",
                     onClick = { activeDialog = PreferenceDialogType.CURRENCY }
                 )
 
                 PreferenceItem(
-                    label = "Mode",
+                    label = stringResource(R.string.mode),
                     value = "$currentModeLabel >",
                     onClick = { activeDialog = PreferenceDialogType.MODE }
                 )
 
                 PreferenceItem(
-                    label = "Notifications",
-                    value = "${if (state.notificationsEnabled) "On" else "Off"} >",
+                    label = stringResource(R.string.notifications),
+                    value = "$notificationStatusLabel >",
                     onClick = { activeDialog = PreferenceDialogType.NOTIFICATIONS }
                 )
             }
@@ -118,6 +214,10 @@ fun SettingsScreen(
             // Log Out Button
             Button(
                 onClick = {
+                    context.getSharedPreferences("active_user", Context.MODE_PRIVATE)
+                        .edit()
+                        .clear()
+                        .apply()
                     onLogOut()
                 },
                 modifier = Modifier
@@ -126,7 +226,12 @@ fun SettingsScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEE6C6D))
             ) {
-                Text("Log out", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(
+                    text = stringResource(R.string.log_out),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -134,35 +239,56 @@ fun SettingsScreen(
         // Selection Dialogs
         when (activeDialog) {
             PreferenceDialogType.LANGUAGE -> {
+                val languageOptions = listOf(
+                    "English" to stringResource(R.string.lang_english),
+                    "Romanian" to stringResource(R.string.lang_romanian),
+                    "Russian" to stringResource(R.string.lang_russian)
+                )
                 PreferenceSelectionDialog(
-                    title = "Select Language",
+                    title = stringResource(R.string.select_language),
                     currentValue = state.language,
-                    options = listOf("English", "Spanish", "German", "French", "Romanian"),
-                    onSelect = { viewModel.updateLanguage(it) },
+                    optionsWithLabels = languageOptions,
+                    onSelect = { selectedLanguage ->
+                        viewModel.updateLanguage(selectedLanguage)
+                        changeAppLanguage(context, selectedLanguage)
+                    },
                     onDismiss = { activeDialog = null }
                 )
             }
             PreferenceDialogType.DATE_FORMAT -> {
+                val dateOptions = listOf(
+                    "DD/MM/YYYY" to stringResource(R.string.date_format_ddmmyyyy),
+                    "MM/DD/YYYY" to stringResource(R.string.date_format_mmddyyyy),
+                    "YYYY-MM-DD" to stringResource(R.string.date_format_iso)
+                )
                 PreferenceSelectionDialog(
-                    title = "Select Date Format",
-                    currentValue = state.dateFormat,
-                    options = listOf("DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"),
-                    onSelect = { viewModel.updateDateFormat(it) },
+                    title = stringResource(R.string.select_date_format),
+                    currentValue = when (state.dateFormat) {
+                        "MM/DD/YYYY" -> stringResource(R.string.date_format_mmddyyyy)
+                        "YYYY-MM-DD" -> stringResource(R.string.date_format_iso)
+                        else -> stringResource(R.string.date_format_ddmmyyyy)
+                    },
+                    optionsWithLabels = dateOptions,
+                    onSelect = { rawChoice -> viewModel.updateDateFormat(rawChoice) },
                     onDismiss = { activeDialog = null }
                 )
             }
             PreferenceDialogType.TIME_FORMAT -> {
+                val timeOptions = listOf(
+                    "24-hour" to stringResource(R.string.time_24_hour),
+                    "12-hour" to stringResource(R.string.time_12_hour)
+                )
                 PreferenceSelectionDialog(
-                    title = "Select Time Format",
-                    currentValue = state.timeFormat,
-                    options = listOf("24-hour", "12-hour"),
-                    onSelect = { viewModel.updateTimeFormat(it) },
+                    title = stringResource(R.string.select_time_format),
+                    currentValue = if (state.timeFormat == "12-hour") stringResource(R.string.time_12_hour) else stringResource(R.string.time_24_hour),
+                    optionsWithLabels = timeOptions,
+                    onSelect = { rawChoice -> viewModel.updateTimeFormat(rawChoice) },
                     onDismiss = { activeDialog = null }
                 )
             }
             PreferenceDialogType.CURRENCY -> {
                 PreferenceSelectionDialog(
-                    title = "Select Currency",
+                    title = stringResource(R.string.select_currency),
                     currentValue = selectedCurrency,
                     options = listOf("USD", "EUR", "MDL"),
                     onSelect = { choice ->
@@ -173,10 +299,15 @@ fun SettingsScreen(
                 )
             }
             PreferenceDialogType.MODE -> {
+                val modeOptions = listOf(
+                    "System" to stringResource(R.string.system_mode),
+                    "Light" to stringResource(R.string.light_mode),
+                    "Dark" to stringResource(R.string.dark_mode)
+                )
                 PreferenceSelectionDialog(
-                    title = "Select Mode",
+                    title = stringResource(R.string.select_mode),
                     currentValue = currentModeLabel,
-                    options = listOf("System", "Light", "Dark"),
+                    optionsWithLabels = modeOptions,
                     onSelect = { modeChoice ->
                         val newMode = when (modeChoice) {
                             "Light" -> AppThemeMode.LIGHT
@@ -189,10 +320,14 @@ fun SettingsScreen(
                 )
             }
             PreferenceDialogType.NOTIFICATIONS -> {
+                val notifOptions = listOf(
+                    "On" to stringResource(R.string.on),
+                    "Off" to stringResource(R.string.off)
+                )
                 PreferenceSelectionDialog(
-                    title = "Notifications",
+                    title = stringResource(R.string.notifications),
                     currentValue = if (state.notificationsEnabled) "On" else "Off",
-                    options = listOf("On", "Off"),
+                    optionsWithLabels = notifOptions,
                     onSelect = { choice ->
                         val enabled = (choice == "On")
                         viewModel.toggleNotifications(context, enabled)
@@ -242,44 +377,49 @@ private fun PreferenceItem(
 }
 
 @Composable
-private fun <T> PreferenceSelectionDialog(
+private fun PreferenceSelectionDialog(
     title: String,
-    currentValue: T,
-    options: List<T>,
-    onSelect: (T) -> Unit,
+    currentValue: String,
+    options: List<String> = emptyList(),
+    optionsWithLabels: List<Pair<String, String>>? = null,
+    onSelect: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val items = optionsWithLabels ?: options.map { it to it }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = title, fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                options.forEach { option ->
+                items.forEach { (rawKey, displayLabel) ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                onSelect(option)
+                                onSelect(rawKey)
                                 onDismiss()
                             }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = option == currentValue,
+                            selected = rawKey == currentValue || displayLabel == currentValue,
                             onClick = {
-                                onSelect(option)
+                                onSelect(rawKey)
                                 onDismiss()
                             }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = option.toString(), fontSize = 16.sp)
+                        Text(text = displayLabel, fontSize = 16.sp)
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
         }
     )
 }

@@ -1,14 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-<string name="app_name">Subscription Manager</string>
-<string name="subscription_list">Subscription List</string>
-<string name="settings">Settings</string>
-<string name="add_subscription">Add Subscription</string>
-<string name="preferences">Preferences</string>
-<string name="language">Language</string>
-<string name="date_format">Date format</string>
-<string name="time_format">Time format</string>
-<string name="currency">Currency</string>
-<string name="mode">Mode</string>
-<string name="notifications">Notifications</string>
-<string name="log_out">Log out</string>
+    <string name="app_name">Subscription Manager</string>
+    <string name="subscription_list">Subscription List</string>
+    <string name="settings">Settings</string>
+    <string name="analytics">Analytics</string>
+    <string name="home">Home</string>
+    <string name="list">List</string>
+
+    <!-- Home Screen -->
+    <string name="monthly_spent">MONTHLY SPENT</string>
+    <string name="by_category">BY CATEGORY</string>
+    <string name="recent_purchases">Recent purchases</string>
+    <string name="upcoming_payments">Upcoming payments</string>
+    <string name="active">Active</string>
+    <string name="inactive">Inactive</string>
+
+    <!-- Add / Edit Screen -->
+    <string name="add_subscription">Add Subscription</string>
+    <string name="edit_subscription">Edit Subscription</string>
+    <string name="save_subscription">Save Subscription</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="cancel">Cancel</string>
+    <string name="app_label">App</string>
+    <string name="subscription_name">Subscription name</string>
+    <string name="category">Category</string>
+    <string name="price">Price</string>
+    <string name="billing_period">Billing period</string>
+    <string name="start_date">Start date</string>
+    <string name="remind_me">Remind me</string>
+    <string name="days_before_remind">Days before to remind</string>
+    <string name="description">Description</string>
+
+    <!-- Settings & Navigation -->
+    <string name="preferences">Preferences</string>
+    <string name="language">Language</string>
+    <string name="date_format">Date format</string>
+    <string name="time_format">Time format</string>
+    <string name="currency">Currency</string>
+    <string name="mode">Mode</string>
+    <string name="notifications">Notifications</string>
+    <string name="log_out">Log out</string>
+    <string name="options">Options</string>
+    <string name="import_statement">Import from Bank Statement</string>
+    <string name="add_manually">Add Manually</string>
+
+    <string name="renews_today">Renews today</string>
+    <string name="renews_tomorrow">Renews tomorrow</string>
+    <string name="renews_in_days">Renews in %1$d days</string>
+    <string name="added_today">Added today</string>
+    <string name="added_yesterday">Added yesterday</string>
+    <string name="added_days_ago">Added %1$d days ago</string>
+
+
+    <string name="system_mode">System</string>
+    <string name="light_mode">Light</string>
+    <string name="dark_mode">Dark</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+
+    <string name="categories">Categories</string>
+    <string name="sort_by">Sort by</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+    <string name="done">Done</string>
+    <string name="reset">Reset</string>
+
+
+    <!-- Categories -->
+    <string name="category_streaming">Streaming</string>
+    <string name="category_productivity">Productivity</string>
+    <string name="category_games">Games</string>
+    <string name="category_food">Food</string>
+    <string name="category_entertainment">Entertainment</string>
+    <string name="category_education">Education</string>
+    <string name="category_health_fitness">Health &amp; Fitness</string>
+    <string name="category_finance">Finance</string>
+
+    <!-- Sorting -->
+    <string name="sort_name">Name</string>
+    <string name="sort_price">Price</string>
+    <string name="sort_next_renewal_date">Next Renewal Date</string>
+
+
+    <!-- Analytics -->
+    <string name="monthly_avg">Monthly Avg</string>
+    <string name="top_category">Top Category</string>
+    <string name="expense_by_category">EXPENSE BY CATEGORY</string>
+    <string name="spending_trends">SPENDING TRENDS (LAST 6 MONTHS)</string>
+    <string name="total_mo">Total/mo</string>
+
+    <!-- Details Screen -->
+    <string name="price_label">PRICE</string>
+    <string name="next_renewal_label">NEXT RENEWAL</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+
+    <!-- Billing Periods -->
+    <string name="weekly">Weekly</string>
+    <string name="monthly">Monthly</string>
+    <string name="three_months">3 Months</string>
+    <string name="six_months">6 Months</string>
+    <string name="yearly">Yearly</string>
+
+    <string name="lang_english">English</string>
+    <string name="lang_romanian">Romanian</string>
+    <string name="lang_russian">Russian</string>
+    <string name="select_language">Select Language</string>
+
+    <string name="select_mode">Select Mode</string>
+    <string name="select_time_format">Select Time Format</string>
+    <string name="select_date_format">Select Date Format</string>
+    <string name="select_currency">Select Currency</string>
+
+
+    <string name="time_24_hour">24-hour</string>
+    <string name="time_12_hour">12-hour</string>
+
+    <string name="date_format_ddmmyyyy">DD/MM/YYYY</string>
+    <string name="date_format_mmddyyyy">MM/DD/YYYY</string>
+    <string name="date_format_iso">YYYY-MM-DD</string>
+
+    <!-- Placeholders -->
+    <string name="placeholder_select_app">Select or type app name</string>
+    <string name="placeholder_enter_text">Enter text here</string>
+    <string name="placeholder_select_category">Select category</string>
+    <string name="placeholder_select_period">Select period</string>
+    <string name="placeholder_description">Optional description</string>
+
+    <string name="per_year">/ year</string>
+    <string name="per_month">/ mo</string>
+
 </resources>
