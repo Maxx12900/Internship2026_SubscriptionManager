@@ -29,6 +29,7 @@ import com.example.subscriptionmanager.notifications.ChannelIds
 import com.example.subscriptionmanager.notifications.createNotificationChannel
 import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
 import com.example.subscriptionmanager.util.AppThemeMode
+import com.example.subscriptionmanager.util.BudgetManager
 import com.example.subscriptionmanager.util.CurrencyManager
 import com.example.subscriptionmanager.util.ThemeManager
 
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
 
         ThemeManager.init(this)
         CurrencyManager.init(this)
+        BudgetManager.init(this)
 
         setContent {
             val themeMode by ThemeManager.themeMode.collectAsState()
