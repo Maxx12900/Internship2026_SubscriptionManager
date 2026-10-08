@@ -26,9 +26,11 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
         val savedUsername = prefs.getString("logged_in_username", "User") ?: "User"
         val notifEnabled = appPrefs.getBoolean("notifications_enabled", true)
+        val savedDateFormat = appPrefs.getString("date_format_option", "DD/MM/YYYY") ?: "DD/MM/YYYY"
 
         _uiState.value = _uiState.value.copy(
             username = savedUsername.replaceFirstChar { it.uppercase() },
+            dateFormat = savedDateFormat,
             notificationsEnabled = notifEnabled
         )
     }

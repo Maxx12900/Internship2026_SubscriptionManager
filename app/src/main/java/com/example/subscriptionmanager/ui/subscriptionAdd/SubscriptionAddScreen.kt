@@ -31,8 +31,10 @@ import com.example.subscriptionmanager.ui.common.fieldHeight
 import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.util.getInstalledApps
 import android.app.DatePickerDialog
+import androidx.compose.foundation.layout.FlexDirection.Companion.Column
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.subscriptionmanager.util.DateTimeManager
 import com.example.subscriptionmanager.notifications.areNotificationsAllowed
 import com.example.subscriptionmanager.notifications.areNotificationsEnabled
 import com.example.subscriptionmanager.notifications.requestNotificationPermission
@@ -300,9 +302,9 @@ fun SubscriptionAddScreen(
             // Start Date
             FieldLabel(label = stringResource(R.string.start_date), isRequired = true)
             var showDatePicker by remember { mutableStateOf(false) }
-            val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
-            val startDateString = remember(formState.startDate) {
-                dateFormat.format(formState.startDate.time)
+            val dateFormatPattern by DateTimeManager.dateFormatPattern.collectAsState()
+            val startDateString = remember(formState.startDate, dateFormatPattern) {
+                DateTimeManager.formatDate(formState.startDate, dateFormatPattern)
             }
 
             Box(

@@ -21,8 +21,8 @@ import com.example.subscriptionmanager.data.entities.BillingPeriod
 import com.example.subscriptionmanager.ui.common.AppIcon
 import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.util.CurrencyManager
-import java.text.SimpleDateFormat
-import java.util.Locale
+import com.example.subscriptionmanager.util.DateTimeManager
+import androidx.compose.foundation.layout.IntrinsicSize
 
 @Composable
 fun SubscriptionDetailsScreen(
@@ -41,27 +41,24 @@ fun SubscriptionDetailsScreen(
 
     val subscription by viewModel.subscription.collectAsState()
 
+
     LaunchedEffect(subscriptionId) {
         viewModel.loadSubscription(subscriptionId)
     }
 
-    val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
+    val dateFormatPattern by DateTimeManager.dateFormatPattern.collectAsState()
 
     subscription?.let { sub ->
-        val formattedRenewalDate = remember(sub.nextRenewalDate) {
-            dateFormat.format(sub.nextRenewalDate.time)
+        val formattedDate = remember(sub.nextRenewalDate, dateFormatPattern) {
+            DateTimeManager.formatDate(sub.nextRenewalDate, dateFormatPattern)
         }
 
-        val formattedStartDate = remember(sub.startDate) {
-            dateFormat.format(sub.startDate.time)
+
+        val formattedStartDate = remember(sub.startDate, dateFormatPattern) {
+            DateTimeManager.formatDate(sub.startDate, dateFormatPattern)
         }
 
-        // Map the ordinal Int back to the Enum name
-        val billingPeriodText = remember(sub.billingPeriod) {
-            BillingPeriod.entries.getOrNull(sub.billingPeriod)?.name
-                ?.replace("_", " ")
-                ?: "Unknown"
-        }
+        val billingPeriodText = BillingPeriod.entries.getOrNull(sub.billingPeriod)?.toTranslatedString() ?: ""
 
         Scaffold(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -123,16 +120,19 @@ fun SubscriptionDetailsScreen(
 
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max)
+                        ) {
                             InfoCard(
                                 label = stringResource(R.string.price_label),
-                                value = "$${sub.price} / mo",
-                                Modifier.weight(1f)
+                                value = "${CurrencyManager.formatPrice(sub.price, currentCurrency)} / mo",
+                                modifier = Modifier.weight(1f).fillMaxHeight()
                             )
                             InfoCard(
                                 label = stringResource(R.string.next_renewal_label),
-                                value = formattedRenewalDate,
-                                Modifier.weight(1f)
+                                value = formattedDate,
+                                modifier = Modifier.weight(1f).fillMaxHeight()
                             )
                         }
                     }
@@ -140,11 +140,14 @@ fun SubscriptionDetailsScreen(
 
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max)
+                        ) {
                             InfoCard(
                                 label = stringResource(R.string.billing_period),
                                 value = billingPeriodText,
-                                Modifier.weight(1f)
+                                modifier = Modifier.weight(1f).fillMaxHeight()
                             )
                             InfoCard(
                                 label = stringResource(R.string.added),
@@ -155,100 +158,101 @@ fun SubscriptionDetailsScreen(
                     }
                 }
 
-                /* Undecided with which design should be used
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = "    DESCRIPTION",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            shadowElevation = 0.dp // Keeping it flat to match InfoCards
-                        ) {
-                            Text(
-                                text = sub.description ?: "No description provided",
-                                modifier = Modifier.padding(16.dp),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-                */
+/* Undecided with which design should be used
+item {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+    ) {
+        Text(
+            text = "    DESCRIPTION",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.error
+        )
+        Spacer(Modifier.height(4.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            shadowElevation = 0.dp // Keeping it flat to match InfoCards
+        ) {
+            Text(
+                text = sub.description ?: "No description provided",
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
 
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
-                    ) {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surface,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, color = MaterialTheme.colorScheme.outlineVariant )
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.description),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                                Text(
-                                    text = sub.description?.takeIf { it.isNotBlank() } ?: stringResource(R.string.no_description),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
+            )
+        }
+    }
+}
+*/
 
-                item {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = { onEdit(sub.id) },
-                            modifier = Modifier.weight(1f).height(50.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Text(stringResource(R.string.edit))
-                        }
-                        Button(
-                            onClick = {
-                                viewModel.deleteSubscription(onSuccess = onDelete)
-                            },
-                            modifier = Modifier.weight(1f).height(50.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError
-                            )
-                        ) {
-                            Text(stringResource(R.string.delete))
-                        }
-                    }
-                }
+item {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.description),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Text(
+                    text = sub.description?.takeIf { it.isNotBlank() } ?: stringResource(R.string.no_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
+}
+
+item {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+    ) {
+        OutlinedButton(
+            onClick = { onEdit(sub.id) },
+            modifier = Modifier.weight(1f).height(50.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Text(stringResource(R.string.edit))
+        }
+        Button(
+            onClick = {
+                viewModel.deleteSubscription(onSuccess = onDelete)
+            },
+            modifier = Modifier.weight(1f).height(50.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError
+            )
+        ) {
+            Text(stringResource(R.string.delete))
+        }
+    }
+}
+}
+}
+}
 }
 
 @Composable
@@ -259,19 +263,34 @@ private fun InfoCard(label: String, value: String, modifier: Modifier = Modifier
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+    Column(
+        modifier = Modifier
+        .fillMaxHeight()
+        .padding(16.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+    Text(
+        label,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Spacer(Modifier.height(4.dp))
+    Text(
+        value,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+    }
+    }
+@Composable
+private fun BillingPeriod.toTranslatedString(): String {
+    return when (this) {
+        BillingPeriod.WEEKLY -> stringResource(R.string.weekly)
+        BillingPeriod.MONTHLY -> stringResource(R.string.monthly)
+        BillingPeriod.THREE_MONTHS -> stringResource(R.string.three_months)
+        BillingPeriod.SIX_MONTHS -> stringResource(R.string.six_months)
+        BillingPeriod.YEARLY -> stringResource(R.string.yearly)
     }
 }

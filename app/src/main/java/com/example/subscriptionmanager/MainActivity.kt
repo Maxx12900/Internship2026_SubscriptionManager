@@ -13,19 +13,19 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.subscriptionmanager.credentials.LocalAccountRepository
 import com.example.subscriptionmanager.credentials.LoginScreen
 import com.example.subscriptionmanager.credentials.SignUpScreen
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.collectAsState
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import com.example.subscriptionmanager.credentials.AuthViewModel
-import com.example.subscriptionmanager.credentials.LocalAccountRepository
+//import androidx.compose.foundation.isSystemInDarkTheme
+//import androidx.compose.runtime.collectAsState
+//import androidx.compose.foundation.isSystemInDarkTheme
+//import androidx.compose.material3.Icon
+//import androidx.compose.material3.Text
+//import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+//import androidx.compose.runtime.Composable
+//import androidx.compose.runtime.collectAsState
+//import androidx.compose.runtime.getValue
+//import com.example.subscriptionmanager.credentials.AuthViewModel
 import com.example.subscriptionmanager.navigation.AppNavGraph
 import com.example.subscriptionmanager.notifications.ChannelIds
 import com.example.subscriptionmanager.notifications.createNotificationChannel
@@ -33,6 +33,7 @@ import com.example.subscriptionmanager.ui.theme.SubscriptionManagerTheme
 import com.example.subscriptionmanager.util.AppThemeMode
 import com.example.subscriptionmanager.util.BudgetManager
 import com.example.subscriptionmanager.util.CurrencyManager
+import com.example.subscriptionmanager.util.DateTimeManager
 import com.example.subscriptionmanager.util.ThemeManager
 
 class MainActivity : ComponentActivity() {
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
 
         ThemeManager.init(this)
         CurrencyManager.init(this)
+        DateTimeManager.init(this)
         BudgetManager.init(this)
 
         val accounts = LocalAccountRepository(this)
@@ -75,7 +77,7 @@ class MainActivity : ComponentActivity() {
                                 rootNav.navigate("home") {
                                     popUpTo("login") { inclusive = true }
                                 }
-                            },
+                            }
                         )
                     }
                     composable("home") {
