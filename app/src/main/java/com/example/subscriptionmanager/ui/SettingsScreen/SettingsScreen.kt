@@ -24,11 +24,12 @@ import com.example.subscriptionmanager.ui.common.fieldHeight
 import com.example.subscriptionmanager.ui.common.padding
 import com.example.subscriptionmanager.util.AppThemeMode
 import com.example.subscriptionmanager.util.CurrencyManager
+import com.example.subscriptionmanager.util.DateTimeManager
 import com.example.subscriptionmanager.util.ThemeManager
 import java.util.Locale
 
 private enum class PreferenceDialogType {
-    LANGUAGE, DATE_FORMAT, TIME_FORMAT, CURRENCY, MODE, NOTIFICATIONS
+    LANGUAGE, DATE_FORMAT, CURRENCY, MODE, NOTIFICATIONS
 }
 
 fun changeAppLanguage(context: Context, languageName: String) {
@@ -184,11 +185,6 @@ fun SettingsScreen(
                     onClick = { activeDialog = PreferenceDialogType.DATE_FORMAT }
                 )
 
-                PreferenceItem(
-                    label = stringResource(R.string.time_format),
-                    value = "$currentTimeLabel >",
-                    onClick = { activeDialog = PreferenceDialogType.TIME_FORMAT }
-                )
 
                 PreferenceItem(
                     label = stringResource(R.string.currency),
@@ -269,23 +265,15 @@ fun SettingsScreen(
                         else -> stringResource(R.string.date_format_ddmmyyyy)
                     },
                     optionsWithLabels = dateOptions,
-                    onSelect = { rawChoice -> viewModel.updateDateFormat(rawChoice) },
+                    onSelect = { choice ->
+                        viewModel.updateDateFormat(choice)
+                        DateTimeManager.setDateFormat(context, choice)
+                        activeDialog = null
+                    },
                     onDismiss = { activeDialog = null }
                 )
             }
-            PreferenceDialogType.TIME_FORMAT -> {
-                val timeOptions = listOf(
-                    "24-hour" to stringResource(R.string.time_24_hour),
-                    "12-hour" to stringResource(R.string.time_12_hour)
-                )
-                PreferenceSelectionDialog(
-                    title = stringResource(R.string.select_time_format),
-                    currentValue = if (state.timeFormat == "12-hour") stringResource(R.string.time_12_hour) else stringResource(R.string.time_24_hour),
-                    optionsWithLabels = timeOptions,
-                    onSelect = { rawChoice -> viewModel.updateTimeFormat(rawChoice) },
-                    onDismiss = { activeDialog = null }
-                )
-            }
+
             PreferenceDialogType.CURRENCY -> {
                 PreferenceSelectionDialog(
                     title = stringResource(R.string.select_currency),

@@ -33,9 +33,7 @@ fun LoginScreen(
         vm = vm,
         buttonText = stringResource(R.string.log_in),
         onSubmit = { vm.logIn(onLoggedIn) },
-    ) {
-        Row(Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {}
-    }
+    ) {Row(Modifier.padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {}}
 }
 
 @Composable
