@@ -385,12 +385,6 @@ private fun HomeSubscriptionCard(
                         val days = row.subtitle.filter { it.isDigit() }.toIntOrNull() ?: 0
                         stringResource(R.string.renews_in_days, days)
                     }
-                    row.subtitle == "Added today" -> stringResource(R.string.added_today)
-                    row.subtitle == "Added yesterday" -> stringResource(R.string.added_yesterday)
-                    row.subtitle.startsWith("Added") -> {
-                        val days = row.subtitle.filter { it.isDigit() }.toIntOrNull() ?: 0
-                        stringResource(R.string.added_days_ago, days)
-                    }
                     else -> row.subtitle
                 }
 
