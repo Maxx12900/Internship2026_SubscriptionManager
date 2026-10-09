@@ -100,7 +100,7 @@ class HomeViewModel(
                 .map { it.toUpcomingRow(now) }
 
             HomeTab.RECENT_PURCHASES -> subscriptions
-                .sortedByDescending { it.startDate.timeInMillis }
+                .sortedByDescending { it.getLastPaidDate(now).timeInMillis }
                 .take(5)
                 .map { it.toRecentRow(now) }
         }
@@ -114,6 +114,41 @@ class HomeViewModel(
         )
     }
 
+    private fun SubscriptionEntity.getLastPaidDate(now: Calendar = Calendar.getInstance()): Calendar {
+        val period = BillingPeriod.entries.getOrNull(billingPeriod) ?: BillingPeriod.MONTHLY
+        var paymentDate = nextRenewalDate.clone() as Calendar
+
+        while (paymentDate.after(now) && paymentDate.after(startDate)) {
+            val prev = paymentDate.clone() as Calendar
+            when (period) {
+                BillingPeriod.WEEKLY -> prev.add(Calendar.WEEK_OF_YEAR, -1)
+                BillingPeriod.MONTHLY -> prev.add(Calendar.MONTH, -1)
+                BillingPeriod.THREE_MONTHS -> prev.add(Calendar.MONTH, -3)
+                BillingPeriod.SIX_MONTHS -> prev.add(Calendar.MONTH, -6)
+                BillingPeriod.YEARLY -> prev.add(Calendar.YEAR, -1)
+            }
+            if (prev.before(startDate)) {
+                paymentDate = startDate
+                break
+            } else {
+                paymentDate = prev
+            }
+        }
+        return paymentDate
+    }
+
+    private fun SubscriptionEntity.toRecentRow(now: Calendar): HomeSubscriptionRow {
+        val lastPaid = getLastPaidDate(now)
+        val days = daysBetween(lastPaid, now)
+        val subtitle = when {
+            days <= 0 -> "Paid today"
+            days == 1L -> "Paid yesterday"
+            else -> "Paid $days days ago"
+        }
+        return HomeSubscriptionRow(id, name, packageName, price, status, subtitle)
+    }
+
+
     private fun SubscriptionEntity.toUpcomingRow(now: Calendar): HomeSubscriptionRow {
         val days = daysBetween(now, nextRenewalDate)
         val subtitle = when {
@@ -124,15 +159,6 @@ class HomeViewModel(
         return HomeSubscriptionRow(id, name, packageName, price, status, subtitle)
     }
 
-    private fun SubscriptionEntity.toRecentRow(now: Calendar): HomeSubscriptionRow {
-        val days = daysBetween(startDate, now)
-        val subtitle = when {
-            days <= 0 -> "Added today"
-            days == 1L -> "Added yesterday"
-            else -> "Added $days days ago"
-        }
-        return HomeSubscriptionRow(id, name, packageName, price, status, subtitle)
-    }
 
     private fun daysBetween(from: Calendar, to: Calendar): Long =
         (to.timeInMillis - from.timeInMillis) / (1000 * 60 * 60 * 24)
