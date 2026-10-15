@@ -23,6 +23,7 @@ import com.example.subscriptionmanager.ui.common.GenericViewModelFactory
 import com.example.subscriptionmanager.util.CurrencyManager
 import com.example.subscriptionmanager.util.DateTimeManager
 import androidx.compose.foundation.layout.IntrinsicSize
+import android.widget.Toast
 
 @Composable
 fun SubscriptionDetailsScreen(
@@ -34,13 +35,15 @@ fun SubscriptionDetailsScreen(
     val context = LocalContext.current
     val repository = (context.applicationContext as SubscriptionManagerApplication).repository
     val currentCurrency by CurrencyManager.currency.collectAsState()
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     val viewModel: SubscriptionDetailsViewModel = viewModel(
         factory = GenericViewModelFactory { SubscriptionDetailsViewModel(repository) }
     )
 
-    val subscription by viewModel.subscription.collectAsState()
 
+
+    val subscription by viewModel.subscription.collectAsState()
 
     LaunchedEffect(subscriptionId) {
         viewModel.loadSubscription(subscriptionId)
@@ -52,7 +55,7 @@ fun SubscriptionDetailsScreen(
         val formattedDate = remember(sub.nextRenewalDate, dateFormatPattern) {
             DateTimeManager.formatDate(sub.nextRenewalDate, dateFormatPattern)
         }
-
+        val deleteMessage = stringResource(R.string.subscription_deleted, sub.name)
 
         val formattedStartDate = remember(sub.startDate, dateFormatPattern) {
             DateTimeManager.formatDate(sub.startDate, dateFormatPattern)
@@ -126,7 +129,7 @@ fun SubscriptionDetailsScreen(
                         ) {
                             InfoCard(
                                 label = stringResource(R.string.price_label),
-                                value = "${CurrencyManager.formatPrice(sub.price, currentCurrency)} / mo",
+                                value = "${CurrencyManager.formatPrice(sub.price, currentCurrency)} ${stringResource(R.string.per_month)}",
                                 modifier = Modifier.weight(1f).fillMaxHeight()
                             )
                             InfoCard(
@@ -152,107 +155,111 @@ fun SubscriptionDetailsScreen(
                             InfoCard(
                                 label = stringResource(R.string.added),
                                 value = formattedStartDate,
-                                Modifier.weight(1f)
+                                modifier = Modifier.weight(1f).fillMaxHeight()
                             )
                         }
                     }
                 }
 
-/* Undecided with which design should be used
-item {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-    ) {
-        Text(
-            text = "    DESCRIPTION",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.error
-        )
-        Spacer(Modifier.height(4.dp))
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shadowElevation = 0.dp // Keeping it flat to match InfoCards
-        ) {
-            Text(
-                text = sub.description ?: "No description provided",
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    ) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.description),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Text(
+                                    text = sub.description?.takeIf { it.isNotBlank() } ?: stringResource(R.string.no_description),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
 
-            )
-        }
-    }
-}
-*/
-
-item {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.description),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.error
-                )
-                Text(
-                    text = sub.description?.takeIf { it.isNotBlank() } ?: stringResource(R.string.no_description),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { onEdit(sub.id) },
+                            modifier = Modifier.weight(1f).height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text(stringResource(R.string.edit))
+                        }
+                        Button(
+                            onClick = { showDeleteDialog = true },
+                            modifier = Modifier.weight(1f).height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            )
+                        ) {
+                            Text(stringResource(R.string.delete))
+                        }
+                    }
+                }
             }
         }
-    }
-}
 
-item {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-    ) {
-        OutlinedButton(
-            onClick = { onEdit(sub.id) },
-            modifier = Modifier.weight(1f).height(50.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.primary
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = {
+                    Text(
+                        text = stringResource(R.string.delete_confirmation_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(text = stringResource(R.string.delete_confirmation_message))
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            viewModel.deleteSubscription(onSuccess = {
+                                Toast.makeText(context, deleteMessage, Toast.LENGTH_SHORT).show()
+                                onDelete()
+                            })
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.delete),
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                }
             )
-        ) {
-            Text(stringResource(R.string.edit))
-        }
-        Button(
-            onClick = {
-                viewModel.deleteSubscription(onSuccess = onDelete)
-            },
-            modifier = Modifier.weight(1f).height(50.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError
-            )
-        ) {
-            Text(stringResource(R.string.delete))
         }
     }
-}
-}
-}
-}
 }
 
 @Composable
@@ -263,27 +270,28 @@ private fun InfoCard(label: String, value: String, modifier: Modifier = Modifier
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-    Column(
-        modifier = Modifier
-        .fillMaxHeight()
-        .padding(16.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-    Text(
-        label,
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-    Spacer(Modifier.height(4.dp))
-    Text(
-        value,
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                value,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
-    }
-    }
+}
+
 @Composable
 private fun BillingPeriod.toTranslatedString(): String {
     return when (this) {

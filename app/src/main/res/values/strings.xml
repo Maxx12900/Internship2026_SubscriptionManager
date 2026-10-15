@@ -138,4 +138,32 @@
     <string name="password">Password</string>
     <string name="eight_chars">At least 8 characters</string>
 
+    <string name="paid_today">Paid today</string>
+    <string name="paid_yesterday">Paid yesterday</string>
+    <string name="paid_days_ago">Paid %1$d days ago</string>
+    <string name="active_count">%1$d active</string>
+
+    <string name="edit_budget">Edit Budget</string>
+    <string name="set_budget">Set Budget</string>
+
+    <string name="monthly_budget">MONTHLY BUDGET</string>
+    <string name="edit_monthly_budget">Edit Monthly Budget</string>
+    <string name="set_monthly_budget">Set Monthly Budget</string>
+    <string name="target_budget">Target Budget</string>
+    <string name="enter_target_budget">Enter target budget (e.g. 300)</string>
+    <string name="clear_budget">Clear Budget</string>
+    <string name="save">Save</string>
+
+    <string name="active_inactive">Active / Inactive</string>
+    <string name="status_label">Status</string>
+
+    <string name="delete_confirmation_title">Delete Subscription</string>
+    <string name="delete_confirmation_message">Are you sure you want to delete this subscription? This action cannot be undone.</string>
+    <string name="save_confirmation_title">Save Subscription</string>
+    <string name="save_confirmation_message">Are you sure you want to save these changes?</string>
+
+    <string name="subscription_added">Subscription \'%1$s\' added successfully</string>
+    <string name="subscription_updated">Subscription \'%1$s\' updated successfully</string>
+    <string name="subscription_deleted">Subscription \'%1$s\' deleted successfully</string>
+
 </resources>

@@ -24,7 +24,6 @@ sealed class Screen(val route: String) {
     object Home                 : Screen("home")
     object SubscriptionList     : Screen("subscription_list")
     object SubscriptionAdd      : Screen("add_subscription")
-    object Analytics            : Screen("analytics")
     object Settings             : Screen("settings")
     object SubscriptionDetails  : Screen("subscription_details/{id}") {
         fun createRoute(id: Int) = "subscription_details/$id"
@@ -44,7 +43,6 @@ fun AppNavGraph(onLogOut:() -> Unit = {}) {
     val topLevelRoutes = listOf(
         Screen.Home.route,
         Screen.SubscriptionList.route,
-        Screen.Analytics.route,
         Screen.Settings.route
     )
 
@@ -82,11 +80,6 @@ fun AppNavGraph(onLogOut:() -> Unit = {}) {
                 )
             }
 
-            // Analytics screen
-            composable(Screen.Analytics.route) {}
-
-            // Settings screen
-            composable(Screen.Settings.route) {}
             // Settings screen
             composable(Screen.Settings.route) {
                 SettingsScreen(
