@@ -98,8 +98,8 @@
     <!-- Billing Periods -->
     <string name="weekly">Еженедельно</string>
     <string name="monthly">Ежемесячно</string>
-    <string name="three_months">Каждые 3 месяца</string>
-    <string name="six_months">Каждые 6 месяцев</string>
+    <string name="three_months">3 месяца</string>
+    <string name="six_months">6 месяцев</string>
     <string name="yearly">Ежегодно</string>
 
     <string name="lang_english">Английский</string>
@@ -134,4 +134,33 @@
     <string name="subscription_manager">Менеджер подписок</string>
     <string name="password">Пароль</string>
     <string name="eight_chars">Не менее 8 символов</string>
+
+    <string name="paid_today">Оплачено сегодня</string>
+    <string name="paid_yesterday">Оплачено вчера</string>
+    <string name="paid_days_ago">Оплачено %1$d дн. назад</string>
+    <string name="active_count">%1$d активн.</string>
+
+    <string name="edit_budget">Изменить бюджет</string>
+    <string name="set_budget">Задать бюджет</string>
+
+    <string name="monthly_budget">МЕСЯЧНЫЙ БЮДЖЕТ</string>
+    <string name="edit_monthly_budget">Изменить месячный бюджет</string>
+    <string name="set_monthly_budget">Задать месячный бюджет</string>
+    <string name="target_budget">Целевой бюджет</string>
+    <string name="enter_target_budget">Введите целевой бюджет (напр. 300)</string>
+    <string name="clear_budget">Сбросить бюджет</string>
+    <string name="save">Сохранить</string>
+
+    <string name="active_inactive">Активна / Неактивна</string>
+    <string name="status_label">Статус</string>
+
+    <string name="delete_confirmation_title">Удалить подписку</string>
+    <string name="delete_confirmation_message">Вы уверены, что хотите удалить эту подписку? Это действие нельзя отменить.</string>
+    <string name="save_confirmation_title">Сохранить подписку</string>
+    <string name="save_confirmation_message">Вы уверены, что хотите сохранить эти изменения?</string>
+
+    <string name="subscription_added">Подписка «%1$s» успешно добавлена</string>
+    <string name="subscription_updated">Подписка «%1$s» успешно обновлена</string>
+    <string name="subscription_deleted">Подписка «%1$s» успешно удалена</string>
+
 </resources>

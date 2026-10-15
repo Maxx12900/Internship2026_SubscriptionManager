@@ -41,7 +41,15 @@ import com.example.subscriptionmanager.notifications.requestNotificationPermissi
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuAnchorType
+import android.widget.Toast
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionAddScreen(
     subscriptionId: Int? = null,
@@ -54,21 +62,34 @@ fun SubscriptionAddScreen(
         factory = GenericViewModelFactory { SubscriptionAddViewModel(application) }
     )
     val formState by viewModel.formState.collectAsState()
+    var showSaveDialog by remember { mutableStateOf(false) }
 
-    val installedApps = remember(context, formState.packageName, formState.name) {
-        val systemApps = getInstalledApps(context)
-        val currentPkg = formState.packageName
+//    val addedMessage = stringResource(R.string.subscription_added)
+//    val updatedMessage = stringResource(R.string.subscription_updated)
 
-        val appsList = mutableListOf<Pair<String?, String>>()
-        appsList.add(null to "None")
+    val subName = formState.name.ifBlank { "Subscription" }
+    val addedMessage = stringResource(R.string.subscription_added, subName)
+    val updatedMessage = stringResource(R.string.subscription_updated, subName)
 
-        if (!currentPkg.isNullOrBlank() && systemApps.none { it.first == currentPkg }) {
-            val fallbackLabel = formState.name.ifBlank { currentPkg }
-            appsList.add(currentPkg to fallbackLabel)
+    val installedApps by produceState<List<Pair<String?, String>>>(
+        initialValue = listOf(null to "None"),
+        context, formState.packageName, formState.name
+    ) {
+        value = withContext(Dispatchers.IO) {
+            val systemApps = getInstalledApps(context)
+            val currentPkg = formState.packageName
+
+            val appsList = mutableListOf<Pair<String?, String>>()
+            appsList.add(null to "None")
+
+            if (!currentPkg.isNullOrBlank() && systemApps.none { it.first == currentPkg }) {
+                val fallbackLabel = formState.name.ifBlank { currentPkg }
+                appsList.add(currentPkg to fallbackLabel)
+            }
+
+            appsList.addAll(systemApps)
+            appsList
         }
-
-        appsList.addAll(systemApps)
-        appsList
     }
 
     LaunchedEffect(subscriptionId) {
@@ -82,7 +103,7 @@ fun SubscriptionAddScreen(
     val buttonText = if (isEditMode) stringResource(R.string.save_changes) else stringResource(R.string.save_subscription)
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -126,7 +147,6 @@ fun SubscriptionAddScreen(
             var appSearchQuery by remember { mutableStateOf("") }
             var appDropdownExpanded by remember { mutableStateOf(false) }
 
-            // Sync initial value for Edit Mode
             LaunchedEffect(formState.id) {
                 if (formState.id > 0 && formState.name.isNotBlank()) {
                     appSearchQuery = formState.name
@@ -134,16 +154,21 @@ fun SubscriptionAddScreen(
             }
 
             val filteredAppSuggestions = remember(appSearchQuery, installedApps) {
-                if (appSearchQuery.isBlank()) {
+                val list = if (appSearchQuery.isBlank()) {
                     installedApps
                 } else {
                     installedApps.filter { (_, appName) ->
                         appName.contains(appSearchQuery, ignoreCase = true)
                     }
                 }
+                list.take(50)
             }
 
-            Box(modifier = Modifier.fillMaxWidth()) {
+            ExposedDropdownMenuBox(
+                expanded = appDropdownExpanded && filteredAppSuggestions.isNotEmpty(),
+                onExpandedChange = { appDropdownExpanded = it },
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 TextField(
                     value = appSearchQuery,
                     onValueChange = { input ->
@@ -169,41 +194,24 @@ fun SubscriptionAddScreen(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
-                    // Dropdown menu and App Icon
                     trailingIcon = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clickable { appDropdownExpanded = !appDropdownExpanded }
-                                .padding(end = 12.dp)
-                        ) {
-                            val currentPkg = formState.packageName
-                            if (!currentPkg.isNullOrBlank()) {
-                                AppIcon(
-                                    packageName = currentPkg,
-                                    fallbackLetter = appSearchQuery.take(1).ifBlank { "?" },
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                            }
-                            Text(text = "▾", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = appDropdownExpanded)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryEditable, enabled = true)
                         .height(fieldHeight)
                 )
 
-                DropdownMenu(
+                ExposedDropdownMenu(
                     expanded = appDropdownExpanded && filteredAppSuggestions.isNotEmpty(),
                     onDismissRequest = { appDropdownExpanded = false },
-                    properties = PopupProperties(focusable = false),
                     modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .heightIn(max = 280.dp)
-                        .background(Color.White, RoundedCornerShape(12.dp))
+                        .fillMaxWidth()
+                        .heightIn(max = 380.dp)
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
                 ) {
-                    filteredAppSuggestions.forEachIndexed { index, (packageName, appName) ->
+                    filteredAppSuggestions.forEach { (packageName, appName) ->
                         DropdownMenuItem(
                             text = {
                                 Row(
@@ -229,14 +237,6 @@ fun SubscriptionAddScreen(
                                         overflow = TextOverflow.Ellipsis,
                                         modifier = Modifier.weight(1f)
                                     )
-                                    if (packageName != null) {
-                                        Spacer(modifier = Modifier.width(12.dp))
-                                        AppIcon(
-                                            packageName = packageName,
-                                            fallbackLetter = appName.take(1).ifBlank { "?" },
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
                                 }
                             },
                             onClick = {
@@ -244,15 +244,8 @@ fun SubscriptionAddScreen(
                                 viewModel.updatePackageName(packageName)
                                 viewModel.updateName(appName)
                                 appDropdownExpanded = false
-                            },
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+                            }
                         )
-                        if (index != filteredAppSuggestions.lastIndex) {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = Color(0xFFF0F0F0)
-                            )
-                        }
                     }
                 }
             }
@@ -393,7 +386,7 @@ fun SubscriptionAddScreen(
 
             // Active/Inactive Status Switch (In edit mode)
             if (isEditMode) {
-                FieldLabel(label = "Active/Inactive", isRequired = false)
+                FieldLabel(label = stringResource(R.string.active_inactive), isRequired = false)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -420,16 +413,8 @@ fun SubscriptionAddScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            formState.error?.let { err ->
-                Text(
-                    text = err,
-                    color = Color.Red,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
             Button(
-                onClick = { viewModel.save(onSuccess = onSave) },
+                onClick = { showSaveDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -447,8 +432,44 @@ fun SubscriptionAddScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
+    }
+    if (showSaveDialog) {
+        AlertDialog(
+            onDismissRequest = { showSaveDialog = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.save_confirmation_title),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(text = stringResource(R.string.save_confirmation_message))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showSaveDialog = false
+                        viewModel.save(onSuccess = {
+                            val message = if (isEditMode) updatedMessage else addedMessage
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show() // 👈 Toast!
+                            onSave()
+                        })
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.save),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSaveDialog = false }) {
+                    Text(text = stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
 

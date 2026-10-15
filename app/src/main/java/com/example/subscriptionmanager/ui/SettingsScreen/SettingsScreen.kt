@@ -32,6 +32,21 @@ private enum class PreferenceDialogType {
     LANGUAGE, DATE_FORMAT, CURRENCY, MODE, NOTIFICATIONS
 }
 
+fun applyLanguage(context: Context, languageName: String) {
+    val languageCode = when (languageName) {
+        "Romanian" -> "ro"
+        "Russian" -> "ru"
+        else -> "en"
+    }
+    val locale = Locale(languageCode)
+    Locale.setDefault(locale)
+
+    val resources = context.resources
+    val config = resources.configuration
+    config.setLocale(locale)
+    @Suppress("DEPRECATION")
+    resources.updateConfiguration(config, resources.displayMetrics)
+}
 fun changeAppLanguage(context: Context, languageName: String) {
     val languageCode = when (languageName) {
         "Romanian" -> "ro"
@@ -50,7 +65,10 @@ fun changeAppLanguage(context: Context, languageName: String) {
         .edit()
         .putString("selected_language", languageName)
         .apply()
+    (context as? android.app.Activity)?.recreate()
 }
+
+
 
 @Composable
 fun SettingsScreen(

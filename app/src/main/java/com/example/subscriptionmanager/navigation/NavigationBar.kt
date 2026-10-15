@@ -37,7 +37,6 @@ sealed class BottomNavItem(
 ) {
     object Home : BottomNavItem(Screen.Home.route, "Home", Icons.Default.Home)
     object List : BottomNavItem(Screen.SubscriptionList.route, "List", Icons.Default.Menu)
-    object Analytics : BottomNavItem(Screen.Analytics.route, "Analytics", Icons.Default.DateRange)
     object Settings : BottomNavItem(Screen.Settings.route, "Settings", Icons.Default.Settings)
 }
 
@@ -50,7 +49,6 @@ fun AppBottomNavigationBar(
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.List,
-        BottomNavItem.Analytics,
         BottomNavItem.Settings
     )
 
@@ -99,7 +97,6 @@ fun AppBottomNavigationBar(
                         val labelText = when (item.route) {
                             Screen.Home.route -> stringResource(R.string.home)
                             Screen.SubscriptionList.route -> stringResource(R.string.list)
-                            Screen.Analytics.route -> stringResource(R.string.analytics)
                             Screen.Settings.route -> stringResource(R.string.settings)
                             else -> item.title
                         }

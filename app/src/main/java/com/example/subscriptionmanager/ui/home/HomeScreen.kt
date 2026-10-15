@@ -144,13 +144,14 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(padding)) {
+            // Header Row: "MONTHLY BUDGET" / "MONTHLY SPENT" & "Edit Budget" / "Set Budget"
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.monthly_spent),
+                    text = if (hasBudget) stringResource(R.string.monthly_budget) else stringResource(R.string.monthly_spent),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary
@@ -159,11 +160,16 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
                     onClick = { showBudgetDialog = true },
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text(if (hasBudget) "Edit Budget" else "Set Budget", fontSize = 12.sp)
+                    Text(
+                        text = if (hasBudget) stringResource(R.string.edit_budget) else stringResource(R.string.set_budget),
+                        fontSize = 12.sp
+                    )
                 }
             }
 
             Spacer(Modifier.height(8.dp))
+
+            // Main Row: Price / Budget Ratios
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -224,7 +230,7 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
                     color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = "$activeCount active",
+                    text = stringResource(R.string.active_count, activeCount),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.onSurfaceVariant
@@ -237,7 +243,12 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
         var inputBudget by remember { mutableStateOf(if (hasBudget) monthlyBudget.toString() else "") }
         AlertDialog(
             onDismissRequest = { showBudgetDialog = false },
-            title = { Text(if (hasBudget) "Edit Monthly Budget" else "Set Monthly Budget", fontWeight = FontWeight.Bold) },
+            title = {
+                Text(
+                    text = if (hasBudget) stringResource(R.string.edit_monthly_budget) else stringResource(R.string.set_monthly_budget),
+                    fontWeight = FontWeight.Bold
+                )
+            },
             text = {
                 OutlinedTextField(
                     value = inputBudget,
@@ -246,8 +257,8 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
                             char.isDigit() || (char == '.' && input.indexOf('.') == index)
                         }
                     },
-                    label = { Text("Target Budget ($)") },
-                    placeholder = { Text("Enter target budget (e.g. 300)") },
+                    label = { Text(stringResource(R.string.target_budget)) },
+                    placeholder = { Text(stringResource(R.string.enter_target_budget)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -261,7 +272,7 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
                         showBudgetDialog = false
                     }
                 ) {
-                    Text("Save")
+                    Text(stringResource(R.string.save))
                 }
             },
             dismissButton = {
@@ -273,7 +284,7 @@ private fun MonthlySpentCard(monthlySpent: Double, yearlySpent: Double, activeCo
                         showBudgetDialog = false
                     }
                 ) {
-                    Text(if (hasBudget) "Clear Budget" else "Cancel")
+                    Text(if (hasBudget) stringResource(R.string.clear_budget) else stringResource(R.string.cancel))
                 }
             }
         )
@@ -384,6 +395,18 @@ private fun HomeSubscriptionCard(
                     row.subtitle.startsWith("Renews in") -> {
                         val days = row.subtitle.filter { it.isDigit() }.toIntOrNull() ?: 0
                         stringResource(R.string.renews_in_days, days)
+                    }
+                    row.subtitle == "Paid today" -> stringResource(R.string.paid_today)
+                    row.subtitle == "Paid yesterday" -> stringResource(R.string.paid_yesterday)
+                    row.subtitle.startsWith("Paid") -> {
+                        val days = row.subtitle.filter { it.isDigit() }.toIntOrNull() ?: 0
+                        stringResource(R.string.paid_days_ago, days)
+                    }
+                    row.subtitle == "Added today" -> stringResource(R.string.added_today)
+                    row.subtitle == "Added yesterday" -> stringResource(R.string.added_yesterday)
+                    row.subtitle.startsWith("Added") -> {
+                        val days = row.subtitle.filter { it.isDigit() }.toIntOrNull() ?: 0
+                        stringResource(R.string.added_days_ago, days)
                     }
                     else -> row.subtitle
                 }

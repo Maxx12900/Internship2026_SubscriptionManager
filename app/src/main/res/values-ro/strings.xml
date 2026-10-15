@@ -136,4 +136,34 @@
     <string name="password">Parolă</string>
     <string name="eight_chars">Cel puțin 8 caractere</string>
 
+    <string name="paid_today">Plătit azi</string>
+    <string name="paid_yesterday">Plătit ieri</string>
+    <string name="paid_days_ago">Plătit acum %1$d zile</string>
+    <string name="active_count">%1$d active</string>
+
+    <string name="edit_budget">Editează bugetul</string>
+    <string name="set_budget">Setează bugetul</string>
+
+    <string name="monthly_budget">BUGET LUNAR</string>
+    <string name="edit_monthly_budget">Editează bugetul lunar</string>
+    <string name="set_monthly_budget">Setează bugetul lunar</string>
+    <string name="target_budget">Buget țintă</string>
+    <string name="enter_target_budget">Introdu bugetul țintă (ex. 300)</string>
+    <string name="clear_budget">Șterge bugetul</string>
+    <string name="save">Salvează</string>
+
+
+    <string name="active_inactive">Activ / Inactiv</string>
+    <string name="status_label">Stare</string>
+
+    <string name="delete_confirmation_title">Șterge abonamentul</string>
+    <string name="delete_confirmation_message">Sigur dorești să ștergi acest abonament? Această acțiune nu poate fi anulată.</string>
+    <string name="save_confirmation_title">Salvează modificările</string>
+    <string name="save_confirmation_message">Sigur dorești să salvezi aceste modificări?</string>
+
+
+    <string name="subscription_added">Abonamentul \'%1$s\' a fost adăugat cu succes</string>
+    <string name="subscription_updated">Abonamentul \'%1$s\' a fost actualizat cu succes</string>
+    <string name="subscription_deleted">Abonamentul \'%1$s\' a fost șters cu succes</string>
+
 </resources>

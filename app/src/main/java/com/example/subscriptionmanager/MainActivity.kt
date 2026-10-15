@@ -40,6 +40,9 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val prefs = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val savedLanguage = prefs.getString("selected_language", "English") ?: "English"
+        com.example.subscriptionmanager.ui.SettingsScreen.applyLanguage(this, savedLanguage)
         enableEdgeToEdge()
         createNotificationChannels(this)
 
