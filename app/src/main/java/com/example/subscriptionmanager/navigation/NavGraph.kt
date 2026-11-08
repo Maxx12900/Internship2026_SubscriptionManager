@@ -34,8 +34,17 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun AppNavGraph(onLogOut:() -> Unit = {}) {
+fun AppNavGraph(
+    onLogOut:() -> Unit = {},
+    initialSubscriptionId: Int = -1
+) {
     val navController: NavHostController = rememberNavController()
+
+    androidx.compose.runtime.LaunchedEffect(initialSubscriptionId) {
+        if (initialSubscriptionId != -1) {
+            navController.navigate(Screen.SubscriptionDetails.createRoute(initialSubscriptionId))
+        }
+    }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
