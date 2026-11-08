@@ -63,6 +63,8 @@ class MainActivity : ComponentActivity() {
 
             SubscriptionManagerTheme(darkTheme = isDark) {
                 val rootNav = rememberNavController()
+                val notificationSubId = intent.getIntExtra("EXTRA_SUBSCRIPTION_ID", -1)
+
                 NavHost(rootNav, startDestination = if (accounts.isRegistered()) "login" else "signup") {
                     composable("login") {
                         LoginScreen(
@@ -89,7 +91,8 @@ class MainActivity : ComponentActivity() {
                                 rootNav.navigate("login") {
                                     popUpTo("home") { inclusive = true }
                                 }
-                            }
+                            },
+                            initialSubscriptionId = notificationSubId
                         )
                     }
                 }

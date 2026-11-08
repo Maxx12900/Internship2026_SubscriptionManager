@@ -18,6 +18,8 @@ import com.example.subscriptionmanager.data.entities.NotificationEntity
 import com.example.subscriptionmanager.data.entities.SubscriptionEntity
 import com.example.subscriptionmanager.data.repository.SubscriptionRepository
 import kotlinx.coroutines.flow.first
+import com.example.subscriptionmanager.util.CurrencyManager
+import com.example.subscriptionmanager.util.DateTimeManager
 
 class ReminderReceiver : BroadcastReceiver() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -58,15 +60,16 @@ class RenewalNotificationWorker(
 
         val verdict = analyzeSubscription(context, subscription)
 
-        println("WHERE NOTIFICATION I'M ASKING")
+        val currentCurrency = CurrencyManager.currency.value
+        val formattedPrice = CurrencyManager.formatPrice(subscription.price, currentCurrency)
+        val formattedDate = DateTimeManager.formatDate(subscription.nextRenewalDate)
 
         val title = "Renewal Reminder"
         val name = subscription.name
         val content: String = if (verdict == AnalysisResponseType.NOT_USED) {
-            "You aren't using $name that often, maybe consider unsubscribing?"
+            "$name ($formattedPrice, renews $formattedDate) - You rarely use this app, consider canceling!"
         } else {
-            "Renewal for $name soon"
-
+            "Renewal for $name ($formattedPrice) on $formattedDate"
         }
 
         val notification = createNotification(
@@ -76,7 +79,19 @@ class RenewalNotificationWorker(
             ChannelIds.RENEWAL
         )
 
+        val intent = Intent(context, com.example.subscriptionmanager.MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("EXTRA_SUBSCRIPTION_ID", subscriptionId)
+        }
+        val pendingIntent = android.app.PendingIntent.getActivity(
+            context,
+            subscriptionId,
+            intent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
         notification.builder
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
         showNotification(context, notification)
