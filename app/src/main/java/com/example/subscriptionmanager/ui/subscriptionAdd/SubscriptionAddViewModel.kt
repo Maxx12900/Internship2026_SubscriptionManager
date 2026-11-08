@@ -13,6 +13,8 @@ import com.example.subscriptionmanager.data.entities.SubscriptionEntity
 import com.example.subscriptionmanager.data.repository.SubscriptionRepository
 import com.example.subscriptionmanager.notifications.areNotificationsAllowed
 import com.example.subscriptionmanager.notifications.areNotificationsEnabled
+import com.example.subscriptionmanager.notifications.addBillingPeriod
+import com.example.subscriptionmanager.notifications.cancelReminder
 import com.example.subscriptionmanager.notifications.scheduleReminder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -138,49 +140,46 @@ class SubscriptionAddViewModel(
     private fun calculateNextRenewalDate(startDate: Calendar, billingPeriod: BillingPeriod): Calendar {
         val renewal = startDate.clone() as Calendar
         val today = Calendar.getInstance()
-        addPeriod(renewal, billingPeriod)
+        addBillingPeriod(renewal, billingPeriod)
         while (renewal.before(today)) {
-            addPeriod(renewal, billingPeriod)
+            addBillingPeriod(renewal, billingPeriod)
         }
 
         return renewal
     }
 
-    private fun addNotification(notification: NotificationEntity) {
-        viewModelScope.launch {
-            val c = Calendar.getInstance()
-            c.add(Calendar.SECOND, 10)
-            val scheduledNotification = scheduleReminder(
+    /**
+     * Persists the reminder settings and keeps the alarm in sync with them: any previously armed
+     * alarm for this subscription is cancelled first, then a new one is armed only if reminders
+     * are on for it.
+     */
+    private suspend fun saveNotification(
+        notification: NotificationEntity,
+        previous: NotificationEntity? = null
+    ) {
+        cancelReminder(application, notification.subscriptionId)
+        previous?.scheduledNotificationId?.let { legacyId ->
+            cancelReminder(application, notification.subscriptionId, legacyId)
+        }
+
+        val scheduledNotification = if (notification.shouldRemind) {
+            scheduleReminder(
                 application,
                 notification.reminderDate,
                 notification.subscriptionId
             )
+        } else {
+            null
+        }
 
-            val updatedNotification = NotificationEntity(
-                id = notification.id,
-                subscriptionId = notification.subscriptionId,
-                shouldRemind = notification.shouldRemind,
-                reminderDate = notification.reminderDate,
+        repository.insertNotification(
+            notification.copy(
                 scheduledReminder = scheduledNotification != null,  // this can fail
-                scheduledNotificationId = scheduledNotification?.id,
-                daysBeforeToRemind = notification.daysBeforeToRemind,
-                showPriceChanges = notification.showPriceChanges,
-                trialEndDate = notification.trialEndDate
+                scheduledNotificationId = scheduledNotification?.id
             )
-
-            repository.insertNotification(updatedNotification)
-        }
+        )
     }
 
-    private fun addPeriod(cal: Calendar, billingPeriod: BillingPeriod) {
-        when (billingPeriod) {
-            BillingPeriod.WEEKLY -> cal.add(Calendar.WEEK_OF_YEAR, 1)
-            BillingPeriod.MONTHLY -> cal.add(Calendar.MONTH, 1)
-            BillingPeriod.THREE_MONTHS -> cal.add(Calendar.MONTH, 3)
-            BillingPeriod.SIX_MONTHS -> cal.add(Calendar.MONTH, 6)
-            BillingPeriod.YEARLY -> cal.add(Calendar.YEAR, 1)
-        }
-    }
     fun save(onSuccess: () -> Unit) {
         val state = _formState.value
         val trimmedName = state.name.trim()
@@ -234,13 +233,20 @@ class SubscriptionAddViewModel(
                             val existingNotifications =
                                 repository.getNotificationsForSubscription(existingId).firstOrNull()
                             val existingNotif = existingNotifications?.firstOrNull()
+                            val reminderCal = (calculatedRenewal.clone() as Calendar).apply {
+                                add(Calendar.DAY_OF_MONTH, -daysBefore)
+                            }
                             if (existingNotif != null) {
-                                addNotification(existingNotif.copy(daysBeforeToRemind = daysBefore))
+                                saveNotification(
+                                    existingNotif.copy(
+                                        shouldRemind = shouldRemind,
+                                        reminderDate = reminderCal,
+                                        daysBeforeToRemind = daysBefore
+                                    ),
+                                    previous = existingNotif
+                                )
                             } else {
-                                val reminderCal = (calculatedRenewal.clone() as Calendar).apply {
-                                    add(Calendar.DAY_OF_MONTH, -daysBefore)
-                                }
-                                addNotification(
+                                saveNotification(
                                     NotificationEntity(
                                         subscriptionId = existingId,
                                         shouldRemind = shouldRemind,
@@ -279,7 +285,7 @@ class SubscriptionAddViewModel(
                             val reminderCal = (calculatedRenewal.clone() as Calendar).apply {
                                 add(Calendar.DAY_OF_MONTH, -daysBefore)
                             }
-                            addNotification(
+                            saveNotification(
                                 NotificationEntity(
                                     subscriptionId = newSubscriptionId,
                                     shouldRemind = shouldRemind,

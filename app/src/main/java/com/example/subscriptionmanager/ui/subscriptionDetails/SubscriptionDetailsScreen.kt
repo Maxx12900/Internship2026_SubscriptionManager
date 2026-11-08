@@ -38,7 +38,9 @@ fun SubscriptionDetailsScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val viewModel: SubscriptionDetailsViewModel = viewModel(
-        factory = GenericViewModelFactory { SubscriptionDetailsViewModel(repository) }
+        factory = GenericViewModelFactory {
+            SubscriptionDetailsViewModel(repository, context.applicationContext)
+        }
     )
 
 
