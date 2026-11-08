@@ -18,6 +18,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.subscriptionmanager.MainActivity
 import com.example.subscriptionmanager.R
+import com.example.subscriptionmanager.data.entities.BillingPeriod
 import java.util.Calendar
 
 private var current_notification_id = 0
@@ -120,27 +121,89 @@ fun createNotificationChannel(context: Context, name: String, descriptionText: S
     notificationManager.createNotificationChannel(channel)
 }
 
+/**
+ * Each subscription has at most one pending renewal reminder. The PendingIntent request code is
+ * derived from the subscription id, so it is stable across process restarts: scheduling again
+ * replaces the existing alarm, and [cancelReminder] can always find it.
+ */
+fun reminderRequestCode(subscriptionId: Int): Int = subscriptionId
+
+private fun reminderIntent(context: Context, subscriptionId: Int): Intent =
+    Intent(context, ReminderReceiver::class.java).apply {
+        putExtra("EXTRA_SUBSCRIPTION_ID", subscriptionId)
+    }
+
 fun scheduleReminder(context: Context, dateTime: Calendar, subscriptionId: Int): ScheduledNotification? {
     if (!areNotificationsEnabled(context)) return null
 
     val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-    current_notification_id++
-    val scheduledNotification = ScheduledNotification(current_notification_id, dateTime.timeInMillis)
+    val scheduledNotification = ScheduledNotification(
+        reminderRequestCode(subscriptionId),
+        dateTime.timeInMillis
+    )
 
-    val intent = Intent(context, ReminderReceiver::class.java).apply {
-        putExtra("EXTRA_SUBSCRIPTION_ID", subscriptionId)
-    }
     val pendingIntent = PendingIntent.getBroadcast(
         context,
         scheduledNotification.id,
-        intent,
+        reminderIntent(context, subscriptionId),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
+    // Same PendingIntent => AlarmManager replaces any alarm already set for this subscription
     alarmManager.setAndAllowWhileIdle(
         AlarmManager.RTC_WAKEUP, scheduledNotification.triggerAtMillis, pendingIntent
     )
 
     return scheduledNotification
+}
+
+/**
+ * Cancels a pending reminder alarm. [requestCode] defaults to the stable per-subscription code;
+ * pass a stored scheduledNotificationId to also clear alarms created by older builds.
+ */
+fun cancelReminder(
+    context: Context,
+    subscriptionId: Int,
+    requestCode: Int = reminderRequestCode(subscriptionId)
+) {
+    val pendingIntent = PendingIntent.getBroadcast(
+        context,
+        requestCode,
+        reminderIntent(context, subscriptionId),
+        PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+    ) ?: return
+
+    context.getSystemService(AlarmManager::class.java).cancel(pendingIntent)
+    pendingIntent.cancel()
+}
+
+fun addBillingPeriod(cal: Calendar, billingPeriod: BillingPeriod) {
+    when (billingPeriod) {
+        BillingPeriod.WEEKLY -> cal.add(Calendar.WEEK_OF_YEAR, 1)
+        BillingPeriod.MONTHLY -> cal.add(Calendar.MONTH, 1)
+        BillingPeriod.THREE_MONTHS -> cal.add(Calendar.MONTH, 3)
+        BillingPeriod.SIX_MONTHS -> cal.add(Calendar.MONTH, 6)
+        BillingPeriod.YEARLY -> cal.add(Calendar.YEAR, 1)
+    }
+}
+
+/**
+ * Returns the first reminder date strictly after [now], starting from [renewalDate] and stepping
+ * forward one billing period at a time. Used after a reminder fires to arm the next cycle.
+ */
+fun nextReminderDateAfter(
+    renewalDate: Calendar,
+    billingPeriod: BillingPeriod,
+    daysBeforeToRemind: Int,
+    now: Calendar = Calendar.getInstance()
+): Calendar {
+    val renewal = renewalDate.clone() as Calendar
+    while (true) {
+        val reminder = (renewal.clone() as Calendar).apply {
+            add(Calendar.DAY_OF_MONTH, -daysBeforeToRemind)
+        }
+        if (reminder.after(now)) return reminder
+        addBillingPeriod(renewal, billingPeriod)
+    }
 }
