@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
 
             SubscriptionManagerTheme(darkTheme = isDark) {
                 val rootNav = rememberNavController()
-                NavHost(rootNav, startDestination = if (accounts.isRegistered()) "login" else "signup") {
+                NavHost(rootNav, startDestination = "home") {
                     composable("login") {
                         LoginScreen(
                             onLoggedIn = {
