@@ -2,7 +2,6 @@ package com.example.subscriptionmanager.ui.subscriptionAdd
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.subscriptionmanager.SubscriptionManagerApplication
 import com.example.subscriptionmanager.data.entities.BillingPeriod
@@ -10,7 +9,6 @@ import com.example.subscriptionmanager.data.entities.Category
 import com.example.subscriptionmanager.data.entities.CategoryEntity
 import com.example.subscriptionmanager.data.entities.NotificationEntity
 import com.example.subscriptionmanager.data.entities.SubscriptionEntity
-import com.example.subscriptionmanager.data.repository.SubscriptionRepository
 import com.example.subscriptionmanager.notifications.areNotificationsAllowed
 import com.example.subscriptionmanager.notifications.areNotificationsEnabled
 import com.example.subscriptionmanager.notifications.scheduleReminder
@@ -149,7 +147,6 @@ class SubscriptionAddViewModel(
     private fun addNotification(notification: NotificationEntity) {
         viewModelScope.launch {
             val c = Calendar.getInstance()
-            c.add(Calendar.SECOND, 10)
             val scheduledNotification = scheduleReminder(
                 application,
                 notification.reminderDate,

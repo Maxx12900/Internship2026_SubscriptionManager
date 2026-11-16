@@ -49,15 +49,12 @@ class RenewalNotificationWorker(
 
         val verdict = analyzeSubscription(context, subscription)
 
-        println("WHERE NOTIFICATION I'M ASKING")
-
         val title = "Renewal Reminder"
         val name = subscription.name
         val content: String = if (verdict == AnalysisResponseType.NOT_USED) {
             "You aren't using $name that often, maybe consider unsubscribing?"
         } else {
             "Renewal for $name soon"
-
         }
 
         val notification = createNotification(
