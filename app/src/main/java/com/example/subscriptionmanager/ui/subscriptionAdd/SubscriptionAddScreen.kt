@@ -411,7 +411,6 @@ fun SubscriptionAddScreen(
                     )
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { showSaveDialog = true },

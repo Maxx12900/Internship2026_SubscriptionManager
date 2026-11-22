@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "96931294021",
+    "project_id": "subscriptionmanager-85901",
+    "storage_bucket": "subscriptionmanager-85901.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:96931294021:android:d59fc0366e061bab27ec2c",
+        "android_client_info": {
+          "package_name": "com.example.subscriptionmanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCg0zWaNksIHcI4bSYkZNcazRU83Se0GuU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
