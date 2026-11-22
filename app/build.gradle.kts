@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.devtools.ksp)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -59,6 +60,10 @@ dependencies {
 
     // Credentials
     implementation(libs.androidx.credentials)
+
+    // Firebase Analytics
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
